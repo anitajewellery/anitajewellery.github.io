@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anita Jewellery — Gold-Plated & Imitation Jewellery</title>
+<meta name="description" content="Anita Jewellery — readymade gold-plated and imitation jewellery. Browse the collection and book on WhatsApp.">
+<meta name="theme-color" content="#5c1a1a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root{
+    --maroon:#5c1a1a; --maroon2:#7a2424; --gold:#c9a227; --gold2:#e8c95a;
+    --cream:#fdf8ee; --ink:#2b2118; --muted:#8a7a63; --card:#ffffff;
+    --ok:#1e7d46; --bad:#b3261e; --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--cream); color:var(--ink)}
+  header{background:linear-gradient(135deg,var(--maroon),var(--maroon2)); color:#fff; padding:18px 16px 14px; position:sticky; top:0; z-index:20; box-shadow:0 2px 10px rgba(0,0,0,.25)}
+  .brand{display:flex; align-items:center; gap:12px}
+  .brand .logo{width:44px; height:44px; border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--gold2), var(--gold)); display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--maroon); font-weight:800; flex:none}
+  .brand h1{font-size:21px; margin:0; letter-spacing:.4px}
+  .brand p{margin:2px 0 0; font-size:12px; color:#f3d98b}
+  .searchbar{margin-top:12px; display:flex; gap:8px}
+  .searchbar input{flex:1; padding:11px 14px; border-radius:999px; border:none; font-size:15px; outline:none}
+  .chips{display:flex; gap:8px; overflow-x:auto; padding:12px 16px 4px; scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none; padding:7px 14px; border-radius:999px; border:1.5px solid var(--gold); background:#fff; color:var(--maroon); font-size:13.5px; font-weight:600; cursor:pointer}
+  .chip.on{background:var(--maroon); color:#fff; border-color:var(--maroon)}
+  main{padding:10px 14px 90px; max-width:900px; margin:0 auto}
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
+  @media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .card{background:var(--card); border-radius:var(--radius); overflow:hidden; box-shadow:0 1px 5px rgba(60,30,0,.12); cursor:pointer; display:flex; flex-direction:column}
+  .card img{width:100%; aspect-ratio:1/1; object-fit:cover; background:#f3ead6}
+  .card .ph{width:100%; aspect-ratio:1/1; background:linear-gradient(135deg,#f6ecd2,#ecd9a8); display:flex; align-items:center; justify-content:center; font-size:44px}
+  .card .info{padding:10px 12px 12px; display:flex; flex-direction:column; gap:3px; flex:1}
+  .card h3{margin:0; font-size:15px; line-height:1.3}
+  .card .cat{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
+  .card .price{margin-top:auto; font-weight:800; color:var(--maroon); font-size:16px}
+  .empty,.loading{text-align:center; color:var(--muted); padding:44px 16px; font-size:15px}
+  .wa-float{position:fixed; right:16px; bottom:86px; z-index:30; background:#25d366; color:#fff; border-radius:999px; padding:12px 18px; font-weight:700; text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.3); font-size:15px}
+  .staff-fab{position:fixed; right:16px; bottom:22px; z-index:30; background:var(--maroon); color:#fff; border:1.5px solid var(--gold); border-radius:999px; padding:12px 18px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.3); font-size:15px}
+  /* modal */
+  .overlay{position:fixed; inset:0; background:rgba(20,8,4,.6); z-index:50; display:none; align-items:flex-end; justify-content:center}
+  .overlay.open{display:flex}
+  .sheet{background:#fff; width:100%; max-width:560px; max-height:92vh; overflow-y:auto; border-radius:20px 20px 0 0; padding:18px 18px 28px; animation:up .22s ease}
+  @media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:20px}}
+  @keyframes up{from{transform:translateY(24px); opacity:.6}to{transform:none; opacity:1}}
+  .sheet img.big{width:100%; border-radius:12px; aspect-ratio:1/1; object-fit:cover; background:#f3ead6}
+  .sheet h2{margin:12px 0 4px; font-size:20px}
+  .sheet .price{font-size:19px; font-weight:800; color:var(--maroon)}
+  .sheet .desc{color:#57493a; font-size:14.5px; line-height:1.5; white-space:pre-wrap}
+  .btn{display:block; width:100%; text-align:center; padding:13px; border-radius:12px; border:none; font-size:16px; font-weight:700; cursor:pointer; margin-top:12px; text-decoration:none}
+  .btn-wa{background:#25d366; color:#fff}
+  .btn-maroon{background:var(--maroon); color:#fff}
+  .btn-ghost{background:#fff; color:var(--maroon); border:1.5px solid var(--maroon)}
+  .btn:disabled{opacity:.55}
+  .x{float:right; background:#f3ead6; border:none; width:34px; height:34px; border-radius:50%; font-size:17px; cursor:pointer}
+  /* staff */
+  .tabs{display:flex; gap:6px; margin:10px 0 14px}
+  .tabs button{flex:1; padding:10px 4px; border-radius:10px; border:1.5px solid var(--gold); background:#fff; font-weight:700; color:var(--maroon); cursor:pointer; font-size:13.5px}
+  .tabs button.on{background:var(--maroon); color:#fff; border-color:var(--maroon)}
+  label{display:block; font-size:13px; font-weight:600; margin:12px 0 5px; color:#57493a}
+  input,select,textarea{width:100%; padding:11px 12px; border:1.5px solid #d8c9a3; border-radius:10px; font-size:15px; font-family:inherit; background:#fff}
+  .row{display:flex; gap:8px}.row>*{flex:1}
+  .msg{margin-top:12px; font-size:14px; padding:10px 12px; border-radius:10px; display:none}
+  .msg.ok{display:block; background:#e6f4ec; color:var(--ok)}
+  .msg.err{display:block; background:#fdecea; color:var(--bad)}
+  .srow{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #eee2c8}
+  .srow img{width:46px; height:46px; border-radius:8px; object-fit:cover; background:#f3ead6; flex:none}
+  .srow .t{flex:1; min-width:0}
+  .srow .t b{display:block; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .srow .t span{font-size:12.5px; color:var(--muted)}
+  .toggle{flex:none; border:none; border-radius:999px; padding:8px 13px; font-weight:700; font-size:12.5px; cursor:pointer}
+  .toggle.in{background:#e6f4ec; color:var(--ok)}
+  .toggle.out{background:#fdecea; color:var(--bad)}
+  .itemrow{display:flex; gap:6px; margin-top:8px}
+  .itemrow input{padding:9px}
+  .itemrow .q{max-width:64px}.itemrow .p{max-width:96px}
+  .itemrow button{flex:none; width:40px; border:none; border-radius:10px; background:#fdecea; color:var(--bad); font-size:16px; cursor:pointer}
+  .totals{margin-top:14px; font-size:15px; line-height:1.7}
+  .totals b{float:right}
+  .totals .grand{font-size:18px; color:var(--maroon); border-top:1.5px solid var(--gold); padding-top:6px; margin-top:6px}
+  footer{text-align:center; color:var(--muted); font-size:12.5px; padding:0 16px 110px}
+  /* receipt print */
+  #receiptPrint{display:none}
+  @media print{
+    body>*{display:none !important}
+    #receiptPrint{display:block !important; font-family:ui-monospace,Menlo,monospace; color:#000; padding:10px}
+    #receiptPrint h2{text-align:center; margin:0}
+    #receiptPrint .c{text-align:center}
+    #receiptPrint hr{border:none; border-top:1px dashed #000}
+    #receiptPrint table{width:100%; border-collapse:collapse}
+    #receiptPrint td,#receiptPrint th{padding:3px 0; text-align:left}
+    #receiptPrint .r{text-align:right}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">A</div>
+    <div>
+      <h1>Anita Jewellery</h1>
+      <p>Gold-plated &amp; imitation jewellery</p>
+    </div>
+  </div>
+  <div class="searchbar">
+    <input id="search" type="search" placeholder="Search necklaces, earrings, bangles…">
+  </div>
+</header>
+
+<div class="chips" id="chips"></div>
+
+<main>
+  <div id="status" class="loading">Loading the collection…</div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>Bookings are taken personally on WhatsApp — tap any product, or the WhatsApp button, to book.</footer>
+
+<a class="wa-float" id="waFloat" target="_blank" rel="noopener">💬 WhatsApp</a>
+<button class="staff-fab" id="staffFab">Staff Desk</button>
+
+<!-- Product detail -->
+<div class="overlay" id="detailOverlay">
+  <div class="sheet" id="detailSheet"></div>
+</div>
+
+<!-- Staff -->
+<div class="overlay" id="staffOverlay">
+  <div class="sheet">
+    <button class="x" data-close="staffOverlay">✕</button>
+    <h2 style="margin-top:2px">Staff Desk</h2>
+
+    <div id="pinGate">
+      <p id="pinHint" style="color:#57493a;font-size:14.5px"></p>
+      <label>Staff PIN</label>
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="Enter PIN">
+      <button class="btn btn-maroon" id="pinBtn">Unlock</button>
+      <div class="msg" id="pinMsg"></div>
+    </div>
+
+    <div id="staffPanel" style="display:none">
+      <div class="tabs">
+        <button data-tab="add" class="on">Add Product</button>
+        <button data-tab="stock">Products</button>
+        <button data-tab="receipt">Receipt</button>
+      </div>
+
+      <!-- Add product -->
+      <section id="tab-add">
+        <label>Product name *</label>
+        <input id="pName" placeholder="e.g. Gold Plated Necklace Set">
+        <div class="row">
+          <div><label>Category *</label>
+            <select id="pCat">
+              <option>Necklace</option><option>Earrings</option><option>Bangles</option>
+              <option>Bracelet</option><option>Ring</option><option>Anklet</option>
+              <option>Mangalsutra</option><option>Set</option><option>Other</option>
+            </select></div>
+          <div><label>Price (₹)</label><input id="pPrice" type="number" min="0" inputmode="numeric" placeholder="1499"></div>
+        </div>
+        <label>Code (optional — auto if blank)</label>
+        <input id="pCode" placeholder="e.g. NCK-001">
+        <label>Description</label>
+        <textarea id="pDesc" rows="2" placeholder="Short description"></textarea>
+        <label>Photo</label>
+        <input id="pPhoto" type="file" accept="image/*">
+        <button class="btn btn-maroon" id="addBtn">Add Product</button>
+        <div class="msg" id="addMsg"></div>
+      </section>
+
+      <!-- Stock -->
+      <section id="tab-stock" style="display:none">
+        <p style="font-size:13.5px;color:#57493a;margin:4px 0 6px">Tap a product's badge to mark it <b>Out of stock</b> (hidden from the shop) or back <b>In stock</b>.</p>
+        <div id="stockList"></div>
+        <div class="msg" id="stockMsg"></div>
+      </section>
+
+      <!-- Receipt -->
+      <section id="tab-receipt" style="display:none">
+        <div class="row">
+          <div><label>Customer name</label><input id="rName" placeholder="Customer name"></div>
+          <div><label>Phone</label><input id="rPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile"></div>
+        </div>
+        <label>Items</label>
+        <div id="rItems"></div>
+        <button class="btn btn-ghost" id="rAddItem" style="margin-top:8px;padding:9px">+ Add item</button>
+        <div class="row">
+          <div><label>Discount (₹)</label><input id="rDisc" type="number" min="0" value="0" inputmode="numeric"></div>
+          <div><label>Payment</label>
+            <select id="rPay"><option>Cash</option><option>UPI</option><option>Card</option><option>Other</option></select></div>
+        </div>
+        <label>Notes</label>
+        <input id="rNotes" placeholder="Optional">
+        <div class="totals">
+          <div>Subtotal <b id="rSub">₹0</b></div>
+          <div>Discount <b id="rDiscShow">₹0</b></div>
+          <div class="grand">Total <b id="rTotal">₹0</b></div>
+        </div>
+        <button class="btn btn-maroon" id="rMake">Generate Receipt</button>
+        <div class="msg" id="rMsg"></div>
+        <div id="rActions" style="display:none">
+          <button class="btn btn-ghost" id="rPrint">🖨 Print / Save PDF</button>
+          <button class="btn btn-wa" id="rWa">Send receipt on WhatsApp</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="receiptPrint"></div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzS9yPbsCrFIKJi5JgGVCUvTyexW9FbegkV7D3MHhDH8RZfukNlLykZqtS4XhtdIn_hsA/exec";
+const WA = "918014998953";
+const $ = id => document.getElementById(id);
+const inr = n => "₹" + Number(n||0).toLocaleString("en-IN");
+let products = [], activeCat = "All", lastReceipt = null;
+
+$("waFloat").href = "https://wa.me/" + WA + "?text=" + encodeURIComponent("Hello Anita Jewellery, I want to enquire about your jewellery.");
+
+/* ---------- showcase ---------- */
+async function loadProducts(){
+  try{
+    const r = await fetch(API + "?action=products");
+    const d = await r.json();
+    products = (d.products || []);
+    renderChips(); renderGrid(); renderStock();
+    $("status").style.display = products.length ? "none" : "block";
+    if(!products.length) $("status").textContent = "New collection coming soon. Please check back, or ask us on WhatsApp.";
+  }catch(e){
+    $("status").textContent = "Could not load the collection. Please check your connection and refresh.";
+  }
+}
+function cats(){
+  const s = ["All"]; products.forEach(p=>{ if(p.category && !s.includes(p.category)) s.push(p.category); });
+  return s;
+}
+function renderChips(){
+  $("chips").innerHTML = cats().map(c=>`<button class="chip ${c===activeCat?'on':''}" data-cat="${c}">${c}</button>`).join("");
+  document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{activeCat=b.dataset.cat; renderChips(); renderGrid();});
+}
+function renderGrid(){
+  const q = $("search").value.trim().toLowerCase();
+  const list = products.filter(p => p.inStock !== false)
+    .filter(p => activeCat==="All" || p.category===activeCat)
+    .filter(p => !q || (p.name+" "+p.category+" "+(p.description||"")).toLowerCase().includes(q));
+  $("grid").innerHTML = list.map(p=>`
+    <article class="card" data-code="${p.code}">
+      ${p.photoUrl ? `<img loading="lazy" src="${p.photoUrl}" alt="">` : `<div class="ph">✨</div>`}
+      <div class="info"><span class="cat">${p.category||""}</span><h3>${p.name}</h3>
+      <div class="price">${p.price ? inr(p.price) : "Price on request"}</div></div>
+    </article>`).join("");
+  document.querySelectorAll(".card").forEach(c=>c.onclick=()=>showDetail(c.dataset.code));
+  if(products.length) $("status").style.display = list.length ? "none" : "block";
+  if(!list.length && products.length) $("status").textContent = "Nothing matches that search.";
+}
+$("search").addEventListener("input", renderGrid);
+
+function showDetail(code){
+  const p = products.find(x=>String(x.code)===String(code)); if(!p) return;
+  const text = `Hello Anita Jewellery, I want to book this item:\n\n${p.name}${p.price ? " — " + inr(p.price) : ""}\nCode: ${p.code}\n\nPlease confirm availability.`;
+  $("detailSheet").innerHTML = `
+    <button class="x" data-close="detailOverlay">✕</button>
+    ${p.photoUrl ? `<img class="big" src="${p.photoUrl}" alt="">` : `<div class="ph" style="border-radius:12px;aspect-ratio:1/1;background:linear-gradient(135deg,#f6ecd2,#ecd9a8);display:flex;align-items:center;justify-content:center;font-size:64px">✨</div>`}
+    <h2>${p.name}</h2>
+    <div class="price">${p.price ? inr(p.price) : "Price on request"}</div>
+    ${p.description ? `<p class="desc">${p.description}</p>` : ""}
+    <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>`;
+  openOverlay("detailOverlay");
+}
+
+/* ---------- overlays ---------- */
+function openOverlay(id){ $(id).classList.add("open"); }
+function closeOverlay(id){ $(id).classList.remove("open"); }
+document.addEventListener("click", e=>{
+  const c = e.target.closest("[data-close]"); if(c) closeOverlay(c.dataset.close);
+  if(e.target.classList.contains("overlay")) e.target.classList.remove("open");
+});
+
+/* ---------- staff PIN (device-level) ---------- */
+async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+$("staffFab").onclick = ()=>{
+  openOverlay("staffOverlay");
+  const set = !!localStorage.getItem("aj_pin");
+  $("pinHint").textContent = set ? "Enter your staff PIN to unlock." : "First time on this device: choose a staff PIN (4+ digits). Remember it — it protects this device only.";
+  $("pinBtn").textContent = set ? "Unlock" : "Set PIN & Unlock";
+};
+$("pinBtn").onclick = async ()=>{
+  const v = $("pinInput").value.trim(); const saved = localStorage.getItem("aj_pin");
+  if(v.length < 4) return showMsg("pinMsg","Please use at least 4 characters.","err");
+  if(!saved){ localStorage.setItem("aj_pin", await sha(v)); unlock(); }
+  else if(await sha(v) === saved){ unlock(); }
+  else showMsg("pinMsg","Wrong PIN. Try again.","err");
+};
+function unlock(){ $("pinGate").style.display="none"; $("staffPanel").style.display="block"; $("pinInput").value=""; }
+function showMsg(id, text, kind){ const m=$(id); m.textContent=text; m.className="msg "+kind; }
+
+/* tabs */
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  ["add","stock","receipt"].forEach(t=>$("tab-"+t).style.display = t===b.dataset.tab ? "block":"none");
+});
+
+/* ---------- add product ---------- */
+function fileToB64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]); r.onerror=rej; r.readAsDataURL(file); }); }
+async function postJSON(obj){
+  const r = await fetch(API, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(obj) });
+  return r.json();
+}
+$("addBtn").onclick = async ()=>{
+  const name = $("pName").value.trim(); if(!name) return showMsg("addMsg","Product name is required.","err");
+  const btn = $("addBtn"); btn.disabled = true; btn.textContent = "Adding…";
+  try{
+    let photoBase64="", photoName="", photoMime="";
+    const f = $("pPhoto").files[0];
+    if(f){ photoBase64 = await fileToB64(f); photoName = f.name; photoMime = f.type; }
+    const code = $("pCode").value.trim() || ("AJ-" + Date.now().toString().slice(-6));
+    const d = await postJSON({ action:"addProduct", code, name, category:$("pCat").value,
+      price:Number($("pPrice").value||0), description:$("pDesc").value.trim(), inStock:true, photoBase64, photoName, photoMime });
+    if(!d.ok) throw new Error(d.error || "failed");
+    showMsg("addMsg", `Added ✓ ${name} (${code}) — it will appear in the shop in a few seconds.`, "ok");
+    ["pName","pCode","pPrice","pDesc"].forEach(i=>$(i).value=""); $("pPhoto").value="";
+    setTimeout(loadProducts, 2500);
+  }catch(e){ showMsg("addMsg","Could not add the product. Check connection and try again.","err"); }
+  btn.disabled = false; btn.textContent = "Add Product";
+};
+
+/* ---------- stock toggle ---------- */
+function renderStock(){
+  $("stockList").innerHTML = products.map(p=>`
+    <div class="srow">
+      ${p.photoUrl ? `<img src="${p.photoUrl}" alt="">` : ""}
+      <div class="t"><b>${p.name}</b><span>${p.code} · ${p.category||""} · ${p.price?inr(p.price):""}</span></div>
+      <button class="toggle ${p.inStock===false?'out':'in'}" data-code="${p.code}">${p.inStock===false?"Out of stock":"In stock"}</button>
+    </div>`).join("") || "<p style='color:#8a7a63'>No products yet.</p>";
+  document.querySelectorAll(".toggle").forEach(b=>b.onclick=()=>toggleStock(b));
+}
+async function toggleStock(b){
+  const p = products.find(x=>String(x.code)===String(b.dataset.code)); if(!p) return;
+  const next = p.inStock === false ? true : false;
+  b.disabled = true; b.textContent = "Saving…";
+  try{
+    const d = await postJSON({ action:"setStock", code:p.code, inStock:next });
+    if(!d.ok) throw new Error(d.error || "failed");
+    p.inStock = next; renderStock(); renderGrid();
+    showMsg("stockMsg", `${p.name} is now ${next ? "In stock ✓" : "Out of stock — hidden from the shop."}`, "ok");
+  }catch(e){
+    b.disabled = false; b.textContent = p.inStock===false ? "Out of stock" : "In stock";
+    showMsg("stockMsg","Stock update needs the latest script version. If this keeps showing, tell sophi to finish the setStock update.","err");
+  }
+}
+
+/* ---------- receipt ---------- */
+function addItemRow(name="", qty=1, price=""){
+  const div = document.createElement("div"); div.className = "itemrow";
+  div.innerHTML = `<input class="n" placeholder="Item name" value="${name}">
+    <input class="q" type="number" min="1" value="${qty}" inputmode="numeric">
+    <input class="p" type="number" min="0" placeholder="₹" value="${price}" inputmode="numeric">
+    <button title="Remove">✕</button>`;
+  div.querySelector("button").onclick = ()=>{ div.remove(); calc(); };
+  div.querySelectorAll("input").forEach(i=>i.addEventListener("input", calc));
+  $("rItems").appendChild(div);
+}
+$("rAddItem").onclick = ()=>addItemRow();
+$("rDisc").addEventListener("input", calc);
+function receiptData(){
+  const items = [...document.querySelectorAll("#rItems .itemrow")].map(r=>({
+    name: r.querySelector(".n").value.trim(),
+    qty: Number(r.querySelector(".q").value||1),
+    price: Number(r.querySelector(".p").value||0)
+  })).filter(i=>i.name);
+  const subtotal = items.reduce((s,i)=>s + i.qty*i.price, 0);
+  const discount = Math.min(Number($("rDisc").value||0), subtotal);
+  return { items, subtotal, discount, total: subtotal - discount };
+}
+function calc(){
+  const d = receiptData();
+  $("rSub").textContent = inr(d.subtotal); $("rDiscShow").textContent = inr(d.discount); $("rTotal").textContent = inr(d.total);
+}
+addItemRow(); calc();
+
+$("rMake").onclick = async ()=>{
+  const d = receiptData();
+  if(!d.items.length) return showMsg("rMsg","Add at least one item first.","err");
+  const no = "AJ-" + new Date().toISOString().slice(0,10).replaceAll("-","") + "-" + String(Date.now()).slice(-4);
+  const date = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+  lastReceipt = { receiptNo:no, saleDate:date, date, customerName:$("rName").value.trim(), customerPhone:$("rPhone").value.trim(),
+    items: d.items.map(i=>`${i.name} x${i.qty} - ${inr(i.qty*i.price)}`).join("; "),
+    itemsList: d.items, subtotal:d.subtotal, discount:d.discount, total:d.total,
+    paymentMode:$("rPay").value, notes:$("rNotes").value.trim(), photo:"" };
+  $("receiptPrint").innerHTML = `
+    <h2>Anita Jewellery</h2><p class="c">Gold-plated &amp; imitation jewellery<br>WhatsApp: +91 8014998953</p><hr>
+    <p>Receipt: ${no}<br>Date: ${date}${lastReceipt.customerName?`<br>Customer: ${lastReceipt.customerName}`:""}${lastReceipt.customerPhone?` (${lastReceipt.customerPhone})`:""}</p><hr>
+    <table>${d.items.map(i=>`<tr><td>${i.name} × ${i.qty}</td><td class="r">${inr(i.qty*i.price)}</td></tr>`).join("")}
+    <tr><td>Subtotal</td><td class="r">${inr(d.subtotal)}</td></tr>
+    ${d.discount?`<tr><td>Discount</td><td class="r">− ${inr(d.discount)}</td></tr>`:""}
+    <tr><td><b>Total</b></td><td class="r"><b>${inr(d.total)}</b></td></tr></table><hr>
+    <p>Payment: ${lastReceipt.paymentMode}${lastReceipt.notes?`<br>Notes: ${lastReceipt.notes}`:""}</p>
+    <p class="c">Thank you for shopping with us!</p>`;
+  $("rActions").style.display = "block";
+  showMsg("rMsg", "Receipt " + no + " ready. Syncing to the shop sheet…", "ok");
+  try{
+    const r = await postJSON(lastReceipt);
+    showMsg("rMsg", r && r.ok ? `Receipt ${no} ready and synced to the sheet ✓` : `Receipt ${no} ready. Sheet sync did not confirm — it is saved on this screen; use Print / WhatsApp.`, r && r.ok ? "ok" : "err");
+  }catch(e){ showMsg("rMsg", `Receipt ${no} ready. Sheet sync failed (connection) — use Print / WhatsApp.`, "err"); }
+};
+$("rPrint").onclick = ()=>window.print();
+$("rWa").onclick = ()=>{
+  if(!lastReceipt) return;
+  const lines = [`*Anita Jewellery — Receipt ${lastReceipt.receiptNo}*`, `Date: ${lastReceipt.saleDate}`, ``,
+    ...lastReceipt.itemsList.map(i=>`${i.name} × ${i.qty} — ${inr(i.qty*i.price)}`),
+    `Subtotal: ${inr(lastReceipt.subtotal)}`, ...(lastReceipt.discount?[`Discount: −${inr(lastReceipt.discount)}`]:[]),
+    `*Total: ${inr(lastReceipt.total)}*`, `Payment: ${lastReceipt.paymentMode}`, ``, `Thank you for shopping with us!`];
+  const phone = lastReceipt.customerPhone.replace(/\D/g,"");
+  const target = phone.length >= 10 ? "91" + phone.slice(-10) : WA;
+  window.open("https://wa.me/" + target + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
+};
+
+loadProducts();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+</script>
+</body>
+</html>
