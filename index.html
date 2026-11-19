@@ -122,7 +122,6 @@
 <footer>Bookings are taken personally on WhatsApp — tap any product, or the WhatsApp button, to book.</footer>
 
 <a class="wa-float" id="waFloat" target="_blank" rel="noopener">💬 WhatsApp</a>
-<button class="staff-fab" id="staffFab">Staff Desk</button>
 
 <!-- Product detail -->
 <div class="overlay" id="detailOverlay">
@@ -284,12 +283,6 @@ document.addEventListener("click", e=>{
 
 /* ---------- staff PIN (device-level) ---------- */
 async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
-$("staffFab").onclick = ()=>{
-  openOverlay("staffOverlay");
-  const set = !!localStorage.getItem("aj_pin");
-  $("pinHint").textContent = set ? "Enter your staff PIN to unlock." : "First time on this device: choose a staff PIN (4+ digits). Remember it — it protects this device only.";
-  $("pinBtn").textContent = set ? "Unlock" : "Set PIN & Unlock";
-};
 $("pinBtn").onclick = async ()=>{
   const v = $("pinInput").value.trim(); const saved = localStorage.getItem("aj_pin");
   if(v.length < 4) return showMsg("pinMsg","Please use at least 4 characters.","err");
