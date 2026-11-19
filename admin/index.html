@@ -324,8 +324,9 @@
         <div class="msg" id="rMsg" role="status"></div>
       </div>
       <div class="card" id="histCard" style="display:none">
-        <h2 style="font-size:19px">Recent receipts</h2>
-        <p class="hint">Saved on this phone, newest first.</p>
+        <h2 style="font-size:19px">Receipt history</h2>
+        <p class="hint">Tap any receipt to open it again — share the photo or print a copy. Includes receipts from the shop sheet.</p>
+        <input id="histSearch" type="search" placeholder="Search name, phone or receipt no" aria-label="Search receipts" style="margin-bottom:6px">
         <div id="rHist"></div>
       </div>
     </div>
@@ -576,20 +577,113 @@ function calc(){
 }
 addItemRow(); calc();
 
-function saveHist(r){
+function histNorm(x){
+  if (x && x.receiptNo) return x;
+  return { receiptNo: x.no, saleDate: x.date, date: x.date, customerName: x.name, customerPhone: "",
+    items: "", itemsList: [], subtotal: x.total, discount: 0, total: x.total, paymentMode: "", notes: "", photo: "" };
+}
+function loadHist(){
   let h = [];
   try{ h = JSON.parse(localStorage.getItem("aj_receipts") || "[]"); }catch(e){}
-  h.unshift({ no: r.receiptNo, date: r.saleDate, name: r.customerName, total: r.total });
-  localStorage.setItem("aj_receipts", JSON.stringify(h.slice(0, 10)));
+  return h.map(histNorm);
+}
+function storeHist(h){
+  localStorage.setItem("aj_receipts", JSON.stringify(h.slice(0, 200)));
+}
+function saveHist(r){
+  const h = loadHist().filter(x => x.receiptNo !== r.receiptNo);
+  h.unshift(r);
+  storeHist(h);
   renderHist();
 }
-function renderHist(){
-  let h = [];
-  try{ h = JSON.parse(localStorage.getItem("aj_receipts") || "[]"); }catch(e){}
-  $("histCard").style.display = h.length ? "block" : "none";
-  $("rHist").innerHTML = h.map(x => '<div class="histrow"><div>' + (x.name || "Customer") + '<span>' + x.no + " · " + x.date + '</span></div><b>' + inr(x.total) + '</b></div>').join("");
+function parseItemsText(text){
+  if (!text) return [];
+  return String(text).split(/;\s*/).map(seg => {
+    const m = seg.match(/^(.*) x(\d+) @ ([\d,]+)$/);
+    if (m) return { name: m[1], qty: Number(m[2]), price: Number(m[3].replace(/,/g, "")) };
+    return { name: seg, qty: 1, price: 0 };
+  }).filter(i => i.name);
 }
+function serverNorm(s){
+  return { receiptNo: s.receiptNo, saleDate: s.saleDate, date: s.saleDate, customerName: s.customerName,
+    customerPhone: s.customerPhone, items: s.items, itemsList: parseItemsText(s.items),
+    subtotal: s.subtotal, discount: s.discount, total: s.total, paymentMode: s.paymentMode, notes: s.notes, photo: s.photo || "" };
+}
+async function syncHistFromServer(){
+  try{
+    const res = await fetch(API + "?action=receipts");
+    const j = await res.json();
+    if (!j || !j.ok || !Array.isArray(j.receipts)) return;
+    const local = loadHist();
+    const localByNo = {}; local.forEach(x => localByNo[x.receiptNo] = x);
+    const serverNos = new Set(j.receipts.map(s => s.receiptNo));
+    const merged = local.filter(x => !serverNos.has(x.receiptNo));
+    j.receipts.forEach(s => {
+      const l = localByNo[s.receiptNo];
+      merged.push(l && l.itemsList && l.itemsList.length ? l : serverNorm(s));
+    });
+    storeHist(merged);
+    renderHist();
+  }catch(e){}
+}
+function renderHist(){
+  const h = loadHist();
+  $("histCard").style.display = h.length ? "block" : "none";
+  const q = ($("histSearch").value || "").trim().toLowerCase();
+  const shown = h.filter(x => !q || (x.customerName || "").toLowerCase().includes(q) || (x.customerPhone || "").includes(q) || (x.receiptNo || "").toLowerCase().includes(q));
+  $("rHist").innerHTML = shown.length
+    ? shown.map(x => '<div class="histrow" data-no="' + esc(x.receiptNo) + '" role="button" style="cursor:pointer"><div>' + esc(x.customerName || "Customer") + '<span>' + esc(x.receiptNo) + " · " + esc(x.saleDate) + '</span></div><b>' + inr(x.total) + ' ›</b></div>').join("")
+    : '<p class="hint">No receipts match your search.</p>';
+  document.querySelectorAll("#rHist .histrow").forEach(row => row.onclick = () => {
+    const r = loadHist().find(x => x.receiptNo === row.dataset.no);
+    if (r) showReceipt(r, true);
+  });
+}
+$("histSearch").addEventListener("input", renderHist);
 renderHist();
+syncHistFromServer();
+
+/* Renders a receipt (fresh or reopened) into the bill card + print area and shows it. */
+function showReceipt(r, isDup){
+  lastReceipt = r;
+  r.duplicate = !!isDup;
+  const no = r.receiptNo, date = r.saleDate, d = { items: r.itemsList || [], subtotal: r.subtotal, discount: r.discount, total: r.total };
+  $("receiptCard").innerHTML =
+    '<div class="rh"><h2>ANITA JEWELLERY</h2><p>Gold-Plated &amp; Imitation Jewellery<br>WhatsApp: +91 8014998953</p></div>' +
+    (isDup ? '<p style="text-align:center; color:var(--bad); font-weight:800; letter-spacing:2px; margin:0 0 10px">— DUPLICATE —</p>' : "") +
+    '<div class="rmeta"><div><div class="k">RECEIPT NO</div><div class="v">' + esc(no) + '</div></div><div style="text-align:right"><div class="k">DATE</div><div class="v">' + esc(date) + '</div></div></div>' +
+    ((r.customerName || r.customerPhone) ?
+      '<div class="rmeta"><div><div class="k">CUSTOMER</div><div class="v">' + esc(r.customerName || "—") + '</div></div>' +
+      (r.customerPhone ? '<div style="text-align:right"><div class="k">PHONE</div><div class="v">' + esc(r.customerPhone) + '</div></div>' : "") + '</div>' : "") +
+    '<table><tr><th>ITEM</th><th class="c">QTY</th><th class="r">RATE</th><th class="r">AMOUNT</th></tr>' +
+    d.items.map(i => '<tr><td>' + esc(i.name) + '</td><td class="c">' + i.qty + '</td><td class="r">' + inr(i.price) + '</td><td class="r"><b>' + inr(i.qty * i.price) + '</b></td></tr>').join("") +
+    '</table>' +
+    '<div class="rrow"><span>Subtotal</span><span>' + inr(d.subtotal) + '</span></div>' +
+    (d.discount ? '<div class="rrow"><span>Discount</span><span>− ' + inr(d.discount) + '</span></div>' : "") +
+    '<div class="rtotal"><span>TOTAL</span><b>' + inr(d.total) + '</b></div>' +
+    '<div class="rrow" style="margin-top:8px"><span>Payment</span><span>' + esc(r.paymentMode || "") + '</span></div>' +
+    (r.notes ? '<div class="rrow"><span>Notes</span><span>' + esc(r.notes) + '</span></div>' : "") +
+    '<p style="text-align:center; color:var(--muted); font-size:13px; margin:14px 0 0">Thank you for shopping with us!</p>';
+
+  $("receiptPrint").innerHTML =
+    '<h2>ANITA JEWELLERY</h2><p class="c">Gold-Plated &amp; Imitation Jewellery<br>WhatsApp: +91 8014998953</p><hr>' +
+    (isDup ? '<p class="c"><b>— DUPLICATE —</b></p>' : "") +
+    '<p>Receipt: ' + esc(no) + '<br>Date: ' + esc(date) + (r.customerName ? '<br>Customer: ' + esc(r.customerName) + (r.customerPhone ? " (" + esc(r.customerPhone) + ")" : "") : "") + '</p><hr>' +
+    '<table><tr><th>Item</th><th class="c">Qty</th><th class="r">Rate</th><th class="r">Amount</th></tr>' +
+    d.items.map(i => '<tr><td>' + esc(i.name) + '</td><td class="c">' + i.qty + '</td><td class="r">' + inr(i.price) + '</td><td class="r">' + inr(i.qty * i.price) + '</td></tr>').join("") +
+    '<tr><td colspan="3">Subtotal</td><td class="r">' + inr(d.subtotal) + '</td></tr>' +
+    (d.discount ? '<tr><td colspan="3">Discount</td><td class="r">- ' + inr(d.discount) + '</td></tr>' : "") +
+    '<tr class="tt"><td colspan="3"><b>TOTAL</b></td><td class="r"><b>' + inr(d.total) + '</b></td></tr></table><hr>' +
+    '<p>Payment: ' + esc(r.paymentMode || "") + (r.notes ? '<br>Notes: ' + esc(r.notes) : "") + '</p><p class="c">Thank you for shopping with us!</p>';
+
+  $("receiptForm").style.display = "none";
+  $("receiptDone").style.display = "block";
+  window.scrollTo({top: 0});
+  if (isDup){
+    const badge = $("syncBadge");
+    badge.className = "syncbadge ok"; badge.textContent = "Re-issued copy — the original is in the shop sheet";
+  }
+}
 
 $("rMake").onclick = async () => {
   const d = receiptData();
@@ -605,35 +699,7 @@ $("rMake").onclick = async () => {
     itemsList: d.items, subtotal: d.subtotal, discount: d.discount, total: d.total,
     paymentMode: selPay, notes: $("rNotes").value.trim(), photo: "" };
 
-  $("receiptCard").innerHTML =
-    '<div class="rh"><h2>ANITA JEWELLERY</h2><p>Gold-Plated &amp; Imitation Jewellery<br>WhatsApp: +91 8014998953</p></div>' +
-    '<div class="rmeta"><div><div class="k">RECEIPT NO</div><div class="v">' + no + '</div></div><div style="text-align:right"><div class="k">DATE</div><div class="v">' + date + '</div></div></div>' +
-    ((lastReceipt.customerName || lastReceipt.customerPhone) ?
-      '<div class="rmeta"><div><div class="k">CUSTOMER</div><div class="v">' + esc(lastReceipt.customerName || "—") + '</div></div>' +
-      (lastReceipt.customerPhone ? '<div style="text-align:right"><div class="k">PHONE</div><div class="v">' + esc(lastReceipt.customerPhone) + '</div></div>' : "") + '</div>' : "") +
-    '<table><tr><th>ITEM</th><th class="c">QTY</th><th class="r">RATE</th><th class="r">AMOUNT</th></tr>' +
-    d.items.map(i => '<tr><td>' + esc(i.name) + '</td><td class="c">' + i.qty + '</td><td class="r">' + inr(i.price) + '</td><td class="r"><b>' + inr(i.qty * i.price) + '</b></td></tr>').join("") +
-    '</table>' +
-    '<div class="rrow"><span>Subtotal</span><span>' + inr(d.subtotal) + '</span></div>' +
-    (d.discount ? '<div class="rrow"><span>Discount</span><span>− ' + inr(d.discount) + '</span></div>' : "") +
-    '<div class="rtotal"><span>TOTAL</span><b>' + inr(d.total) + '</b></div>' +
-    '<div class="rrow" style="margin-top:8px"><span>Payment</span><span>' + selPay + '</span></div>' +
-    (lastReceipt.notes ? '<div class="rrow"><span>Notes</span><span>' + esc(lastReceipt.notes) + '</span></div>' : "") +
-    '<p style="text-align:center; color:var(--muted); font-size:13px; margin:14px 0 0">Thank you for shopping with us!</p>';
-
-  $("receiptPrint").innerHTML =
-    '<h2>ANITA JEWELLERY</h2><p class="c">Gold-Plated &amp; Imitation Jewellery<br>WhatsApp: +91 8014998953</p><hr>' +
-    '<p>Receipt: ' + no + '<br>Date: ' + date + (lastReceipt.customerName ? '<br>Customer: ' + esc(lastReceipt.customerName) + (lastReceipt.customerPhone ? " (" + esc(lastReceipt.customerPhone) + ")" : "") : "") + '</p><hr>' +
-    '<table><tr><th>Item</th><th class="c">Qty</th><th class="r">Rate</th><th class="r">Amount</th></tr>' +
-    d.items.map(i => '<tr><td>' + esc(i.name) + '</td><td class="c">' + i.qty + '</td><td class="r">' + inr(i.price) + '</td><td class="r">' + inr(i.qty * i.price) + '</td></tr>').join("") +
-    '<tr><td colspan="3">Subtotal</td><td class="r">' + inr(d.subtotal) + '</td></tr>' +
-    (d.discount ? '<tr><td colspan="3">Discount</td><td class="r">- ' + inr(d.discount) + '</td></tr>' : "") +
-    '<tr class="tt"><td colspan="3"><b>TOTAL</b></td><td class="r"><b>' + inr(d.total) + '</b></td></tr></table><hr>' +
-    '<p>Payment: ' + selPay + (lastReceipt.notes ? '<br>Notes: ' + esc(lastReceipt.notes) : "") + '</p><p class="c">Thank you for shopping with us!</p>';
-
-  $("receiptForm").style.display = "none";
-  $("receiptDone").style.display = "block";
-  window.scrollTo({top: 0});
+  showReceipt(lastReceipt, false);
   saveHist(lastReceipt);
   if (navigator.vibrate) navigator.vibrate(12);
 
@@ -680,6 +746,10 @@ function receiptPhotoBlob(r){
     ctx.fillText("GOLD-PLATED & IMITATION JEWELLERY", W / 2, y); y += 19;
     ctx.fillStyle = MUT; ctx.font = '400 12.5px Montserrat, sans-serif';
     ctx.fillText("WhatsApp: +91 8014998953", W / 2, y); y += 16;
+    if (r.duplicate){
+      ctx.fillStyle = "#DC2626"; ctx.font = '800 13px Montserrat, sans-serif';
+      ctx.fillText("—  D U P L I C A T E  —", W / 2, y + 4); y += 20;
+    }
     line(PAD, xR, y, GOLDB, 1.5); y += 26;
     ctx.textAlign = "left";
     ctx.fillStyle = MUT; ctx.font = '700 10.5px Montserrat, sans-serif';
