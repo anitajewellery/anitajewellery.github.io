@@ -52,7 +52,7 @@
   label{display:block; font-size:13.5px; font-weight:700; margin:16px 0 7px}
   label:first-child{margin-top:0}
   .req{color:var(--bad)}
-  input,select,textarea{width:100%; min-height:50px; padding:12px 14px; border:1.5px solid var(--border); border-radius:12px; font-size:16px; font-family:inherit; background:#fff; color:var(--ink)}
+  input,select,textarea{width:100%; min-height:54px; padding:12px 14px; border:1.5px solid var(--border); border-radius:12px; font-size:16px; font-family:inherit; background:#fff; color:var(--ink)}
   textarea{min-height:0; resize:vertical}
   input.invalid,textarea.invalid{border-color:var(--bad); background:#fff7f6}
   .err{display:none; color:var(--bad); font-size:13px; font-weight:600; margin-top:6px}
@@ -109,7 +109,7 @@
   .prow .t{flex:1; min-width:0}
   .prow .t b{display:block; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .prow .leftlbl{color:var(--gold); font-weight:700}
-  .editbtn{flex:none; border:1.5px solid var(--border); background:#fff; color:var(--brand); font-weight:700; font-size:13px; border-radius:10px; padding:9px 12px; cursor:pointer; min-height:44px}
+  .editbtn{flex:none; border:1.5px solid var(--border); background:#fff; color:var(--brand); font-weight:700; font-size:13px; border-radius:10px; padding:9px 12px; cursor:pointer; min-height:48px}
   .todayband{display:flex; justify-content:space-between; align-items:center; background:#f7ebd2; border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:14px}
   .todayband .k{font-size:11.5px; font-weight:800; letter-spacing:1px; color:var(--gold)}
   .todayband .s{font-size:12.5px; color:var(--muted)}
@@ -137,13 +137,14 @@
   .itemrow .n{flex:1; min-width:0}
   .itemrow .p{width:104px; flex:none}
   .qty{display:flex; align-items:center; gap:2px; flex:none}
-  .qty button{width:44px; height:50px; border-radius:12px; border:1.5px solid var(--border); background:#fff; font-size:19px; font-weight:700; color:var(--brand)}
+  .qty button{width:44px; height:54px; border-radius:12px; border:1.5px solid var(--border); background:#fff; font-size:19px; font-weight:700; color:var(--brand)}
   .qty input{width:46px; text-align:center; padding:12px 2px}
   .itemrow .del{width:44px; flex:none; border-radius:12px; border:1.5px solid #f0c6c2; background:var(--bad-bg); color:var(--bad); font-size:16px}
   .totals{margin-top:16px; border-top:1.5px dashed var(--border); padding-top:12px; font-size:15px}
   .totals .r{display:flex; justify-content:space-between; padding:3px 0}
   .totals .grand{font-size:19px; font-weight:800; color:var(--brand); border-top:1.5px solid var(--gold-bright); margin-top:8px; padding-top:10px}
   .paychips .chip[aria-pressed="true"]{background:var(--gold); border-color:var(--gold)}
+  .histgroup{color:var(--gold); font-weight:800; font-size:11.5px; letter-spacing:1px; margin:14px 0 2px}
   .histrow{display:flex; justify-content:space-between; gap:10px; padding:11px 2px; border-bottom:1px solid #f0e8d8; font-size:14px}
   .histrow b{color:var(--brand)}
   .histrow span{color:var(--muted); font-size:12.5px; display:block}
@@ -296,6 +297,7 @@
       <input id="pSearch" type="search" placeholder="Search products…" aria-label="Search products">
     </div>
     <div class="summary" id="pSummary"></div>
+    <div class="summary" id="prodFresh" style="margin-top:2px"></div>
     <div class="card" id="editCard" style="display:none">
       <h2 style="font-size:19px">Edit product</h2>
       <p class="hint" id="editMeta"></p>
@@ -320,10 +322,6 @@
   <!-- ============ RECEIPT ============ -->
   <section class="screen on" id="scr-receipt" aria-label="Receipt">
     <div id="receiptForm">
-      <div class="todayband" id="todaySales" style="display:none">
-        <div><div class="k">TODAY'S SALES</div><div class="s" id="todaySub"></div></div>
-        <div class="v" id="todayVal"></div>
-      </div>
       <div class="card">
         <h2>New receipt</h2>
         <p class="hint">For readymade jewellery. No GST.</p>
@@ -333,13 +331,13 @@
         <input id="rPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile number">
         <label>Items <span class="req">*</span></label>
         <div id="rItems"></div>
-        <button class="btn btn-primary" id="rPick" style="min-height:50px; margin-top:12px">Pick from catalogue</button>
+        <button class="btn btn-primary" id="rPick" style="margin-top:12px">Pick from catalogue</button>
         <div id="pickerPanel" style="display:none; margin-top:12px">
           <input id="pickSearch" type="search" placeholder="Search products…" aria-label="Search products">
           <div id="pickList" style="margin-top:10px"></div>
-          <button class="btn btn-ghost" id="pickClose" style="min-height:48px">Close</button>
+          <button class="btn btn-ghost" id="pickClose">Close</button>
         </div>
-        <button class="btn btn-ghost" id="rAddItem" style="min-height:50px; margin-top:10px">+ Add item manually</button>
+        <button class="btn btn-ghost" id="rAddItem" style="margin-top:10px">+ Add item manually</button>
         <div class="err" id="itemsErr">Add at least one item with a name.</div>
         <div class="row2" style="display:flex; gap:10px">
           <div style="flex:1">
@@ -366,12 +364,6 @@
         </button>
         <div class="msg" id="rMsg" role="status"></div>
       </div>
-      <div class="card" id="histCard" style="display:none">
-        <h2 style="font-size:19px">Receipt history</h2>
-        <p class="hint">Tap any receipt to open it again — share the photo or print a copy. Includes receipts from the shop sheet.</p>
-        <input id="histSearch" type="search" placeholder="Search name, phone or receipt no" aria-label="Search receipts" style="margin-bottom:6px">
-        <div id="rHist"></div>
-      </div>
     </div>
 
     <div id="receiptDone" style="display:none">
@@ -387,21 +379,39 @@
       <button class="btn btn-primary" id="rNew">New receipt</button>
     </div>
   </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="screen" id="scr-history" aria-label="Receipt history">
+    <div class="todayband" id="todaySales" style="display:none">
+      <div><div class="k">TODAY'S SALES</div><div class="s" id="todaySub"></div></div>
+      <div class="v" id="todayVal"></div>
+    </div>
+    <div class="card" id="histCard">
+      <h2 style="font-size:19px">Receipt history</h2>
+      <p class="hint">Tap any receipt to open it again — share the photo or print a copy. Includes receipts from the shop sheet.</p>
+      <input id="histSearch" type="search" placeholder="Search name, phone or receipt no" aria-label="Search receipts" style="margin-bottom:6px">
+      <div id="rHist"></div>
+    </div>
+  </section>
 </main>
 
 <!-- BOTTOM NAV -->
 <nav role="tablist" aria-label="Admin sections">
-  <button role="tab" data-scr="upload" aria-selected="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-    Upload
+  <button role="tab" data-scr="receipt" aria-selected="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6"/></svg>
+    Receipt
+  </button>
+  <button role="tab" data-scr="history" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 3"/></svg>
+    History
   </button>
   <button role="tab" data-scr="products" aria-selected="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
     Products
   </button>
-  <button role="tab" data-scr="receipt" aria-selected="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6"/></svg>
-    Receipt
+  <button role="tab" data-scr="upload" aria-selected="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    Upload
   </button>
 </nav>
 
@@ -452,6 +462,7 @@ function go(scr){
   document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === "scr-" + scr));
   window.scrollTo({top: 0});
   if (scr === "products"){ renderProducts(); loadProducts(); }
+  if (scr === "history"){ renderHist(); renderToday(); }
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.scr));
 
@@ -460,16 +471,32 @@ async function postJSON(obj){
   const r = await fetch(API, { method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(obj) });
   return r.json();
 }
+function showFresh(ts){
+  if (!ts) return;
+  const mins = Math.floor((Date.now() - ts) / 60000);
+  const label = mins < 1 ? "just now" : mins < 60 ? mins + " min ago" : mins < 1440 ? Math.floor(mins / 60) + " h ago" : "on " + new Date(ts).toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+  $("prodFresh").textContent = "Product list · updated " + label;
+}
 async function loadProducts(){
-  $("pList").innerHTML = '<div class="skl"></div><div class="skl"></div><div class="skl"></div>';
+  /* Show the saved copy instantly, then refresh from the sheet in the background. */
+  let hadCache = false;
+  try{
+    const c = JSON.parse(localStorage.getItem("aj_products_cache") || "null");
+    if (c && Array.isArray(c.products)){ products = c.products; hadCache = true; renderProducts(); showFresh(c.ts); }
+  }catch(e){}
+  if (!hadCache) $("pList").innerHTML = '<div class="skl"></div><div class="skl"></div><div class="skl"></div>';
   try{
     const r = await fetch(API + "?action=products");
     const d = await r.json();
     products = d.products || [];
+    try{ localStorage.setItem("aj_products_cache", JSON.stringify({ ts: Date.now(), products })); }catch(e){}
     renderProducts();
+    showFresh(Date.now());
   }catch(e){
-    $("pList").innerHTML = '<div class="empty">Could not load products.<br>Check your connection and reopen this tab.</div>';
-    $("pSummary").textContent = "";
+    if (!hadCache){
+      $("pList").innerHTML = '<div class="empty">Could not load products.<br>Check your connection and reopen this tab.</div>';
+      $("pSummary").textContent = "";
+    }
   }
 }
 
@@ -693,7 +720,12 @@ $("pickSearch").addEventListener("input", renderPicker);
 function renderToday(){
   const todayStr = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   const list = loadHist().filter(r => r.saleDate === todayStr && !r.voided);
-  if (!list.length){ $("todaySales").style.display = "none"; return; }
+  if (!list.length){
+    $("todaySub").textContent = "No bills yet today";
+    $("todayVal").textContent = inr(0);
+    $("todaySales").style.display = "flex";
+    return;
+  }
   $("todaySub").textContent = list.length + (list.length === 1 ? " bill" : " bills") + " · " + todayStr;
   $("todayVal").textContent = inr(list.reduce((s, r) => s + Number(r.total || 0), 0));
   $("todaySales").style.display = "flex";
@@ -774,20 +806,32 @@ async function syncHistFromServer(){
 }
 function renderHist(){
   const h = loadHist();
-  $("histCard").style.display = h.length ? "block" : "none";
   const q = ($("histSearch").value || "").trim().toLowerCase();
   const shown = h.filter(x => !q || (x.customerName || "").toLowerCase().includes(q) || (x.customerPhone || "").includes(q) || (x.receiptNo || "").toLowerCase().includes(q));
-  $("rHist").innerHTML = shown.length
-    ? shown.map(x => '<div class="histrow" data-no="' + esc(x.receiptNo) + '" role="button" style="cursor:pointer"><div>' + esc(x.customerName || "Customer") + '<span>' + esc(x.receiptNo) + " · " + esc(x.saleDate) + (x.voided ? ' · <b style="color:var(--bad)">VOID</b>' : "") + '</span></div><b' + (x.voided ? ' style="text-decoration:line-through; color:var(--muted)"' : "") + '>' + inr(x.total) + ' ›</b></div>').join("")
-    : '<p class="hint">No receipts match your search.</p>';
+  const fmtD = d => d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const todayStr = fmtD(new Date());
+  const yestStr = fmtD(new Date(Date.now() - 86400000));
+  const label = ds => ds === todayStr ? "Today" : ds === yestStr ? "Yesterday" : ds;
+  if (!shown.length){
+    $("rHist").innerHTML = '<p class="hint">' + (h.length ? "No receipts match your search." : "No receipts yet. Bills you make will appear here.") + '</p>';
+    return;
+  }
+  let html = "", lastLabel = null;
+  shown.forEach(x => {
+    const lb = label(x.saleDate);
+    if (lb !== lastLabel){ lastLabel = lb; html += '<div class="histgroup">' + esc(lb.toUpperCase()) + '</div>'; }
+    html += '<div class="histrow" data-no="' + esc(x.receiptNo) + '" role="button" style="cursor:pointer"><div>' + esc(x.customerName || "Customer") + '<span>' + esc(x.receiptNo) + " · " + esc(x.saleDate) + (x.voided ? ' · <b style="color:var(--bad)">VOID</b>' : "") + '</span></div><b' + (x.voided ? ' style="text-decoration:line-through; color:var(--muted)"' : "") + '>' + inr(x.total) + ' ›</b></div>';
+  });
+  $("rHist").innerHTML = html;
   document.querySelectorAll("#rHist .histrow").forEach(row => row.onclick = () => {
     const r = loadHist().find(x => x.receiptNo === row.dataset.no);
-    if (r) showReceipt(r, true);
+    if (r){ go("receipt"); showReceipt(r, true); }
   });
 }
 $("histSearch").addEventListener("input", renderHist);
 renderHist();
 renderToday();
+loadProducts();
 syncHistFromServer().then(renderToday);
 
 /* Renders a receipt (fresh or reopened) into the bill card + print area and shows it. */

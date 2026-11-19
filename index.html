@@ -253,16 +253,29 @@ $("waFloat").href = "https://wa.me/" + WA + "?text=" + encodeURIComponent("Hello
 
 /* ---------- showcase ---------- */
 async function loadProducts(){
+  /* Show the saved copy instantly, then refresh from the sheet in the background. */
+  let hadCache = false;
+  try{
+    const c = JSON.parse(localStorage.getItem("aj_shop_products") || "null");
+    if (c && Array.isArray(c.products) && c.products.length){
+      products = c.products; hadCache = true;
+      renderChips(); renderGrid(); renderStock();
+      $("status").style.display = "none";
+    }
+  }catch(e){}
   try{
     const r = await fetch(API + "?action=products");
     const d = await r.json();
     products = (d.products || []);
+    try{ localStorage.setItem("aj_shop_products", JSON.stringify({ ts: Date.now(), products })); }catch(e){}
     renderChips(); renderGrid(); renderStock();
     $("status").style.display = products.length ? "none" : "block";
     if(!products.length) $("status").textContent = "New collection coming soon. Please check back, or ask us on WhatsApp.";
   }catch(e){
-    $("grid").innerHTML = "";
-    $("status").textContent = "Could not load the collection. Please check your connection and refresh.";
+    if (!hadCache){
+      $("grid").innerHTML = "";
+      $("status").textContent = "Could not load the collection. Please check your connection and refresh.";
+    }
   }
 }
 function cats(){
