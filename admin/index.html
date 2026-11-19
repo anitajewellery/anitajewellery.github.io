@@ -21,7 +21,7 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html{scroll-behavior:smooth}
-  body{margin:0; font-family:'Montserrat',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.5; padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px)}
+  body{margin:0; font-family:'Montserrat',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.5; padding-bottom:calc(104px + env(safe-area-inset-bottom))}
   h1,h2,.serif{font-family:'Cormorant Garamond',Georgia,serif}
   button{font-family:inherit; cursor:pointer}
   :focus-visible{outline:3px solid var(--ring); outline-offset:2px; border-radius:6px}
@@ -84,7 +84,7 @@
   .btn svg{width:20px; height:20px; flex:none}
   .spin{width:19px; height:19px; border-radius:50%; border:2.5px solid rgba(255,255,255,.35); border-top-color:#fff; animation:sp .7s linear infinite; flex:none}
   @keyframes sp{to{transform:rotate(360deg)}}
-  .sticky-cta{position:sticky; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px); z-index:5; margin-top:14px}
+  .sticky-cta{position:sticky; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:5; margin-top:14px}
   .msg{display:none; margin-top:12px; padding:12px 14px; border-radius:12px; font-size:14.5px; font-weight:600}
   .msg.ok{display:block; background:var(--ok-bg); color:var(--ok)}
   .msg.errm{display:block; background:var(--bad-bg); color:var(--bad)}
@@ -169,10 +169,10 @@
   .syncbadge.bad{background:var(--bad-bg); color:var(--bad)}
 
   /* Bottom nav */
-  nav{position:fixed; left:0; right:0; bottom:0; z-index:40; height:calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:#fff; border-top:1px solid var(--border); display:flex; box-shadow:0 -2px 12px rgba(28,25,23,.06)}
-  nav button{flex:1; background:none; border:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:12px; font-weight:700; color:var(--muted); min-height:var(--nav-h)}
+  nav{position:fixed; left:14px; right:14px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:40; background:#fff; border:1px solid var(--border); border-radius:999px; display:flex; padding:6px; box-shadow:0 10px 28px rgba(28,25,23,.18)}
+  nav button{flex:1; background:none; border:none; border-radius:999px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:12px; font-weight:700; color:var(--muted); min-height:56px}
   nav button svg{width:24px; height:24px}
-  nav button[aria-selected="true"]{color:var(--brand)}
+  nav button[aria-selected="true"]{background:#F7EBD2; color:var(--brand)}
   nav button[aria-selected="true"] svg{color:var(--gold)}
 
   /* PIN lock */
@@ -329,6 +329,8 @@
         <input id="rName" placeholder="Customer name" autocomplete="off">
         <label for="rPhone">Customer phone</label>
         <input id="rPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile number">
+        <label for="rAddr">Address</label>
+        <input id="rAddr" placeholder="Village / town" autocomplete="off">
         <label>Items <span class="req">*</span></label>
         <div id="rItems"></div>
         <button class="btn btn-primary" id="rPick" style="margin-top:12px">Pick from catalogue</button>
@@ -421,7 +423,7 @@
 const API = "https://script.google.com/macros/s/AKfycbzS9yPbsCrFIKJi5JgGVCUvTyexW9FbegkV7D3MHhDH8RZfukNlLykZqtS4XhtdIn_hsA/exec";
 const WA = "918014998953";
 const CATS = ["Necklace","Earrings","Bangles","Bracelet","Ring","Anklet","Mangalsutra","Set","Other"];
-const PAYS = ["Cash","UPI","Card","Other"];
+const PAYS = ["Cash","UPI"];
 const $ = id => document.getElementById(id);
 const inr = n => "₹" + Number(n||0).toLocaleString("en-IN");
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -751,7 +753,7 @@ addItemRow(); calc();
 
 function histNorm(x){
   if (x && x.receiptNo){ x.voided = !!x.voided; return x; }
-  return { receiptNo: x.no, saleDate: x.date, date: x.date, customerName: x.name, customerPhone: "",
+  return { receiptNo: x.no, saleDate: x.date, date: x.date, customerName: x.name, customerPhone: "", customerAddress: x.customerAddress || x.address || "",
     items: "", itemsList: [], subtotal: x.total, discount: 0, total: x.total, paymentMode: "", notes: "", photo: "", voided: false };
 }
 function loadHist(){
@@ -779,7 +781,7 @@ function parseItemsText(text){
 }
 function serverNorm(s){
   return { receiptNo: s.receiptNo, saleDate: s.saleDate, date: s.saleDate, customerName: s.customerName,
-    customerPhone: s.customerPhone, items: s.items, itemsList: parseItemsText(s.items),
+    customerPhone: s.customerPhone, customerAddress: s.customerAddress || "", items: s.items, itemsList: parseItemsText(s.items),
     subtotal: s.subtotal, discount: s.discount, total: s.total, paymentMode: s.paymentMode, notes: s.notes, photo: s.photo || "",
     voided: s.status === "VOID" };
 }
@@ -844,9 +846,10 @@ function showReceipt(r, isDup){
     '<div class="rh"><h2>ANITA JEWELLERY</h2><p>Gold-Plated &amp; Imitation Jewellery<br>WhatsApp: +91 8014998953</p></div>' +
     (stamp ? '<p style="text-align:center; color:var(--bad); font-weight:800; letter-spacing:2px; margin:0 0 10px">' + stamp + '</p>' : "") +
     '<div class="rmeta"><div><div class="k">RECEIPT NO</div><div class="v">' + esc(no) + '</div></div><div style="text-align:right"><div class="k">DATE</div><div class="v">' + esc(date) + '</div></div></div>' +
-    ((r.customerName || r.customerPhone) ?
+    ((r.customerName || r.customerPhone || r.customerAddress) ?
       '<div class="rmeta"><div><div class="k">CUSTOMER</div><div class="v">' + esc(r.customerName || "—") + '</div></div>' +
       (r.customerPhone ? '<div style="text-align:right"><div class="k">PHONE</div><div class="v">' + esc(r.customerPhone) + '</div></div>' : "") + '</div>' : "") +
+    (r.customerAddress ? '<div class="rrow"><span>Address</span><span style="text-align:right">' + esc(r.customerAddress) + '</span></div>' : "") +
     '<table><tr><th>ITEM</th><th class="c">QTY</th><th class="r">RATE</th><th class="r">AMOUNT</th></tr>' +
     d.items.map(i => '<tr><td>' + esc(i.name) + '</td><td class="c">' + i.qty + '</td><td class="r">' + inr(i.price) + '</td><td class="r"><b>' + inr(i.qty * i.price) + '</b></td></tr>').join("") +
     '</table>' +
@@ -860,7 +863,7 @@ function showReceipt(r, isDup){
   $("receiptPrint").innerHTML =
     '<h2>ANITA JEWELLERY</h2><p class="c">Gold-Plated &amp; Imitation Jewellery<br>WhatsApp: +91 8014998953</p><hr>' +
     (stamp ? '<p class="c"><b>' + stamp + '</b></p>' : "") +
-    '<p>Receipt: ' + esc(no) + '<br>Date: ' + esc(date) + (r.customerName ? '<br>Customer: ' + esc(r.customerName) + (r.customerPhone ? " (" + esc(r.customerPhone) + ")" : "") : "") + '</p><hr>' +
+    '<p>Receipt: ' + esc(no) + '<br>Date: ' + esc(date) + (r.customerName ? '<br>Customer: ' + esc(r.customerName) + (r.customerPhone ? " (" + esc(r.customerPhone) + ")" : "") : "") + (r.customerAddress ? '<br>Address: ' + esc(r.customerAddress) : "") + '</p><hr>' +
     '<table><tr><th>Item</th><th class="c">Qty</th><th class="r">Rate</th><th class="r">Amount</th></tr>' +
     d.items.map(i => '<tr><td>' + esc(i.name) + '</td><td class="c">' + i.qty + '</td><td class="r">' + inr(i.price) + '</td><td class="r">' + inr(i.qty * i.price) + '</td></tr>').join("") +
     '<tr><td colspan="3">Subtotal</td><td class="r">' + inr(d.subtotal) + '</td></tr>' +
@@ -890,7 +893,7 @@ $("rMake").onclick = async () => {
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span><span>Generating…</span>';
   const no = "AJ-" + new Date().toISOString().slice(0, 10).replaceAll("-", "") + "-" + String(Date.now()).slice(-4);
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  lastReceipt = { receiptNo: no, saleDate: date, date, customerName: $("rName").value.trim(), customerPhone: $("rPhone").value.trim(),
+  lastReceipt = { receiptNo: no, saleDate: date, date, customerName: $("rName").value.trim(), customerPhone: $("rPhone").value.trim(), customerAddress: $("rAddr").value.trim(),
     items: d.items.map(i => i.name + " x" + i.qty + " - " + inr(i.qty * i.price)).join("; "),
     itemsList: d.items, subtotal: d.subtotal, discount: d.discount, total: d.total,
     paymentMode: selPay, notes: $("rNotes").value.trim(), photo: "" };
@@ -967,6 +970,18 @@ function receiptPhotoBlob(r){
       ctx.textAlign = "left"; ctx.fillText(r.customerName || "—", nameX, y);
       if (r.customerPhone){ ctx.textAlign = "right"; ctx.fillText(r.customerPhone, xR, y); }
       y += 10;
+      if (r.customerAddress){
+        y += 15;
+        ctx.fillStyle = MUT; ctx.font = '400 12.5px Montserrat, sans-serif'; ctx.textAlign = "left";
+        for (const ln of wrap(r.customerAddress, '400 12.5px Montserrat, sans-serif', W - 2 * PAD)){ ctx.fillText(ln, nameX, y); y += 15; }
+        ctx.fillStyle = INK;
+      }
+    }
+    if (!r.customerName && !r.customerPhone && r.customerAddress){
+      y += 16;
+      ctx.fillStyle = MUT; ctx.font = '400 12.5px Montserrat, sans-serif'; ctx.textAlign = "left";
+      for (const ln of wrap(r.customerAddress, '400 12.5px Montserrat, sans-serif', W - 2 * PAD)){ ctx.fillText(ln, nameX, y); y += 15; }
+      ctx.fillStyle = INK;
     }
     y += 8; line(PAD, xR, y, BORD, 1); y += 22;
     ctx.fillStyle = MUT; ctx.font = '700 11px Montserrat, sans-serif';
@@ -1072,7 +1087,7 @@ $("rPrint").onclick = () => window.print();
 $("rNew").onclick = () => {
   $("receiptDone").style.display = "none";
   $("receiptForm").style.display = "block";
-  ["rName","rPhone","rNotes"].forEach(i => $(i).value = "");
+  ["rName","rPhone","rAddr","rNotes"].forEach(i => $(i).value = "");
   $("rDisc").value = 0; $("rItems").innerHTML = ""; addItemRow(); calc();
   window.scrollTo({top: 0});
 };
