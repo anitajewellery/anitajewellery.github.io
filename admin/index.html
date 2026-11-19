@@ -108,6 +108,18 @@
   .prow .noph svg{width:26px; height:26px}
   .prow .t{flex:1; min-width:0}
   .prow .t b{display:block; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .prow .leftlbl{color:var(--gold); font-weight:700}
+  .editbtn{flex:none; border:1.5px solid var(--border); background:#fff; color:var(--brand); font-weight:700; font-size:13px; border-radius:10px; padding:9px 12px; cursor:pointer; min-height:44px}
+  .todayband{display:flex; justify-content:space-between; align-items:center; background:#f7ebd2; border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:14px}
+  .todayband .k{font-size:11.5px; font-weight:800; letter-spacing:1px; color:var(--gold)}
+  .todayband .s{font-size:12.5px; color:var(--muted)}
+  .todayband .v{font-size:21px; font-weight:800; color:var(--brand)}
+  .pickrow{display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer}
+  .pickrow img,.pickrow .noph{width:48px; height:48px; border-radius:10px; object-fit:cover; background:#f3ead6; flex:none}
+  .pickrow .t{flex:1; min-width:0}
+  .pickrow .t b{display:block; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pickrow .t span{font-size:12px; color:var(--muted)}
+  .pickrow .pr{font-weight:800; color:var(--brand); font-size:14px}
   .prow .t span{font-size:12.5px; color:var(--muted)}
   .prow .t .outlbl{color:var(--bad); font-weight:700}
   .switch{position:relative; flex:none; width:58px; height:48px; background:none; border:none; padding:0}
@@ -248,6 +260,10 @@
         <div class="help">Leave blank if you prefer “Price on request”.</div>
         <div class="err" id="priceErr">Price must be a number above 0.</div>
 
+        <label for="pLeft">Pieces left <span style="color:var(--muted); font-weight:500">(optional)</span></label>
+        <input id="pLeft" type="number" min="0" inputmode="numeric" placeholder="e.g. 2">
+        <div class="help">If only 1 or 2 pieces are left, the shop shows “Only X left!” — customers book faster.</div>
+
         <label for="pDesc">Description <span style="color:var(--muted); font-weight:500">(optional)</span></label>
         <textarea id="pDesc" rows="2" placeholder="Short description, e.g. Gold-plated, skin-friendly finish"></textarea>
 
@@ -280,6 +296,23 @@
       <input id="pSearch" type="search" placeholder="Search products…" aria-label="Search products">
     </div>
     <div class="summary" id="pSummary"></div>
+    <div class="card" id="editCard" style="display:none">
+      <h2 style="font-size:19px">Edit product</h2>
+      <p class="hint" id="editMeta"></p>
+      <label for="eName">Product name</label>
+      <input id="eName" autocomplete="off">
+      <label for="eCat">Category</label>
+      <input id="eCat" autocomplete="off">
+      <label for="ePrice">Price (₹)</label>
+      <input id="ePrice" type="number" min="0" inputmode="numeric">
+      <label for="eLeft">Pieces left <span style="color:var(--muted); font-weight:500">(optional — blank = no badge)</span></label>
+      <input id="eLeft" type="number" min="0" inputmode="numeric">
+      <label for="eDesc">Description</label>
+      <textarea id="eDesc" rows="2"></textarea>
+      <button class="btn btn-primary" id="editSave" style="margin-top:12px">Save changes</button>
+      <button class="btn btn-ghost" id="editCancel" style="margin-top:10px">Cancel</button>
+      <div class="msg" id="editMsg" role="status"></div>
+    </div>
     <div id="pList"></div>
     <div class="msg" id="stockMsg" role="status"></div>
   </section>
@@ -287,6 +320,10 @@
   <!-- ============ RECEIPT ============ -->
   <section class="screen" id="scr-receipt" aria-label="Receipt">
     <div id="receiptForm">
+      <div class="todayband" id="todaySales" style="display:none">
+        <div><div class="k">TODAY'S SALES</div><div class="s" id="todaySub"></div></div>
+        <div class="v" id="todayVal"></div>
+      </div>
       <div class="card">
         <h2>New receipt</h2>
         <p class="hint">For readymade jewellery. No GST.</p>
@@ -296,7 +333,13 @@
         <input id="rPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile number">
         <label>Items <span class="req">*</span></label>
         <div id="rItems"></div>
-        <button class="btn btn-ghost" id="rAddItem" style="min-height:50px; margin-top:12px">+ Add item</button>
+        <button class="btn btn-primary" id="rPick" style="min-height:50px; margin-top:12px">Pick from catalogue</button>
+        <div id="pickerPanel" style="display:none; margin-top:12px">
+          <input id="pickSearch" type="search" placeholder="Search products…" aria-label="Search products">
+          <div id="pickList" style="margin-top:10px"></div>
+          <button class="btn btn-ghost" id="pickClose" style="min-height:48px">Close</button>
+        </div>
+        <button class="btn btn-ghost" id="rAddItem" style="min-height:50px; margin-top:10px">+ Add item manually</button>
         <div class="err" id="itemsErr">Add at least one item with a name.</div>
         <div class="row2" style="display:flex; gap:10px">
           <div style="flex:1">
@@ -474,8 +517,10 @@ $("addBtn").onclick = async () => {
   $("addMsg").className = "msg"; $("addMsg").textContent = "";
   try{
     const code = "AJ-" + Date.now().toString().slice(-6);
+    const leftRaw = $("pLeft").value.trim();
     const d = await postJSON({ action: "addProduct", code, name, category: selCat,
       price: priceRaw === "" ? 0 : Number(priceRaw), description: $("pDesc").value.trim(), inStock: true,
+      left: leftRaw === "" ? "" : Number(leftRaw),
       photoBase64: photoData ? photoData.base64 : "", photoName: photoData ? photoData.name : "", photoMime: photoData ? photoData.mime : "" });
     if (!d.ok) throw new Error(d.error || "failed");
     if (navigator.vibrate) navigator.vibrate(12);
@@ -491,7 +536,7 @@ $("addBtn").onclick = async () => {
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span>Add Product</span>';
 };
 $("anotherBtn").onclick = () => {
-  ["pName","pPrice","pDesc"].forEach(i => $(i).value = "");
+  ["pName","pPrice","pDesc","pLeft"].forEach(i => $(i).value = "");
   selCat = ""; photoData = null; $("photoFile").value = "";
   document.querySelectorAll("#catChips .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
   const btn = $("photoBtn"); btn.classList.remove("has");
@@ -515,12 +560,56 @@ function renderProducts(){
   $("pList").innerHTML = list.map(p =>
     '<div class="prow">' +
       (p.photoUrl ? '<img loading="lazy" src="' + p.photoUrl + '" alt="">' : '<div class="noph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12"/></svg></div>') +
-      '<div class="t"><b>' + p.name + '</b><span>' + (p.category || "") + (p.price ? " · " + inr(p.price) : "") + '</span>' +
+      '<div class="t"><b>' + esc(p.name) + '</b><span>' + esc(p.category || "") + (p.price ? " · " + inr(p.price) : "") + '</span>' +
+      (p.left === 1 || p.left === 2 ? '<span class="leftlbl"> · Only ' + p.left + ' left!</span>' : '') +
       (p.inStock === false ? '<span class="outlbl"> · Out of stock</span>' : '') + '</div>' +
-      '<button class="switch" role="switch" aria-checked="' + (p.inStock !== false) + '" aria-label="In stock: ' + p.name + '" data-code="' + p.code + '"><span class="tr"></span><span class="th"></span></button>' +
+      '<button class="editbtn" data-code="' + p.code + '">Edit</button>' +
+      '<button class="switch" role="switch" aria-checked="' + (p.inStock !== false) + '" aria-label="In stock: ' + esc(p.name) + '" data-code="' + p.code + '"><span class="tr"></span><span class="th"></span></button>' +
     '</div>').join("") || '<div class="empty">Nothing matches that search.</div>';
   document.querySelectorAll(".switch").forEach(sw => sw.onclick = () => toggleStock(sw));
+  document.querySelectorAll(".editbtn").forEach(b => b.onclick = () => openEdit(b.dataset.code));
 }
+
+/* ---------- edit product ---------- */
+let editingCode = null;
+function openEdit(code){
+  const p = products.find(x => String(x.code) === String(code)); if (!p) return;
+  editingCode = p.code;
+  $("editMeta").textContent = "Code " + p.code + " · the photo stays the same.";
+  $("eName").value = p.name || "";
+  $("eCat").value = p.category || "";
+  $("ePrice").value = p.price || "";
+  $("eLeft").value = (p.left === null || typeof p.left === "undefined") ? "" : p.left;
+  $("eDesc").value = p.description || "";
+  $("editMsg").className = "msg"; $("editMsg").textContent = "";
+  $("editCard").style.display = "block";
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+$("editCancel").onclick = () => { $("editCard").style.display = "none"; editingCode = null; };
+$("editSave").onclick = async () => {
+  const p = products.find(x => String(x.code) === String(editingCode)); if (!p) return;
+  const name = $("eName").value.trim();
+  if (!name){ const m = $("editMsg"); m.textContent = "Please enter the product name."; m.className = "msg errm"; return; }
+  const btn = $("editSave");
+  btn.disabled = true; btn.textContent = "Saving…";
+  const priceRaw = $("ePrice").value.trim();
+  const leftRaw = $("eLeft").value.trim();
+  const upd = { name, category: $("eCat").value.trim(), price: priceRaw === "" ? 0 : Number(priceRaw),
+    description: $("eDesc").value.trim(), left: leftRaw === "" ? "" : Number(leftRaw) };
+  try{
+    const d = await postJSON({ action: "updateProduct", code: p.code, ...upd });
+    if (!d.ok) throw new Error(d.error || "failed");
+    Object.assign(p, { name: upd.name, category: upd.category, price: upd.price, description: upd.description, left: upd.left === "" ? null : upd.left });
+    $("editCard").style.display = "none"; editingCode = null;
+    renderProducts();
+    const m = $("stockMsg"); m.textContent = upd.name + " updated ✓"; m.className = "msg ok";
+    if (navigator.vibrate) navigator.vibrate(8);
+    setTimeout(() => { $("stockMsg").className = "msg"; }, 4000);
+  }catch(e){
+    const m = $("editMsg"); m.textContent = "Could not save changes. Check your connection and try again."; m.className = "msg errm";
+  }
+  btn.disabled = false; btn.textContent = "Save changes";
+};
 $("pSearch").addEventListener("input", renderProducts);
 async function toggleStock(sw){
   const p = products.find(x => String(x.code) === String(sw.dataset.code)); if (!p) return;
@@ -558,6 +647,55 @@ function addItemRow(){
   $("rItems").appendChild(div);
 }
 $("rAddItem").onclick = () => { addItemRow(); };
+
+/* ---------- catalogue picker ---------- */
+function renderPicker(){
+  const q = ($("pickSearch").value || "").trim().toLowerCase();
+  const list = products.filter(p => p.inStock !== false && (!q || (p.name + " " + p.category).toLowerCase().includes(q)));
+  $("pickList").innerHTML = list.length ? list.map(p =>
+    '<button type="button" class="pickrow" data-code="' + p.code + '">' +
+      (p.photoUrl ? '<img loading="lazy" src="' + p.photoUrl + '" alt="">' : '<div class="noph"></div>') +
+      '<span class="t"><b>' + esc(p.name) + '</b><span>' + esc(p.category || "") + (p.left === 1 || p.left === 2 ? " · Only " + p.left + " left!" : "") + '</span></span>' +
+      '<span class="pr">' + (p.price ? inr(p.price) : "Price on request") + '</span>' +
+    '</button>').join("")
+    : '<p class="hint">' + (products.length ? "No products match your search." : "No products loaded yet — check your connection.") + '</p>';
+  document.querySelectorAll(".pickrow").forEach(b => b.onclick = () => addFromCatalogue(b.dataset.code));
+}
+function addFromCatalogue(code){
+  const p = products.find(x => String(x.code) === String(code)); if (!p) return;
+  const rows = [...document.querySelectorAll("#rItems .itemrow")];
+  let row = rows.find(r => r.querySelector(".n").value.trim().toLowerCase() === p.name.toLowerCase() && Number(r.querySelector(".p").value || 0) === Number(p.price || 0));
+  if (row){
+    const q = row.querySelector(".q");
+    q.value = Number(q.value || 1) + 1;
+  } else {
+    row = rows.find(r => !r.querySelector(".n").value.trim());
+    if (!row){ addItemRow(); row = document.querySelectorAll("#rItems .itemrow"); row = row[row.length - 1]; }
+    row.querySelector(".n").value = p.name;
+    row.querySelector(".p").value = p.price || "";
+  }
+  $("itemsErr").classList.remove("show");
+  calc();
+  $("pickerPanel").style.display = "none";
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+$("rPick").onclick = () => {
+  if (!products.length) loadProducts();
+  renderPicker();
+  $("pickerPanel").style.display = "block";
+};
+$("pickClose").onclick = () => { $("pickerPanel").style.display = "none"; };
+$("pickSearch").addEventListener("input", renderPicker);
+
+/* ---------- today's sales ---------- */
+function renderToday(){
+  const todayStr = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const list = loadHist().filter(r => r.saleDate === todayStr);
+  if (!list.length){ $("todaySales").style.display = "none"; return; }
+  $("todaySub").textContent = list.length + (list.length === 1 ? " bill" : " bills") + " · " + todayStr;
+  $("todayVal").textContent = inr(list.reduce((s, r) => s + Number(r.total || 0), 0));
+  $("todaySales").style.display = "flex";
+}
 $("rDisc").addEventListener("input", calc);
 function receiptData(){
   const items = [...document.querySelectorAll("#rItems .itemrow")].map(r => ({
@@ -595,6 +733,7 @@ function saveHist(r){
   h.unshift(r);
   storeHist(h);
   renderHist();
+  renderToday();
 }
 function parseItemsText(text){
   if (!text) return [];
@@ -641,7 +780,8 @@ function renderHist(){
 }
 $("histSearch").addEventListener("input", renderHist);
 renderHist();
-syncHistFromServer();
+renderToday();
+syncHistFromServer().then(renderToday);
 
 /* Renders a receipt (fresh or reopened) into the bill card + print area and shows it. */
 function showReceipt(r, isDup){
