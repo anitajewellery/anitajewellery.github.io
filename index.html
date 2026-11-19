@@ -39,6 +39,19 @@
   .card .cat{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
   .card .price{margin-top:auto; font-weight:800; color:var(--maroon); font-size:16px}
   .empty,.loading{text-align:center; color:var(--muted); padding:44px 16px; font-size:15px}
+  .card{position:relative}
+  .leftbadge{position:absolute; top:10px; left:10px; background:#b91c1c; color:#fff; font-size:12px; font-weight:800; padding:5px 10px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.25); letter-spacing:.2px}
+  .leftline{display:inline-block; margin-top:8px; background:#fdf0d5; color:#b91c1c; font-weight:800; font-size:13.5px; padding:6px 12px; border-radius:999px}
+  .toolbar{display:flex; justify-content:space-between; align-items:center; gap:10px; max-width:1060px; margin:2px auto 10px; padding:0 14px}
+  .toolbar .cnt{font-size:13px; color:var(--muted); font-weight:600}
+  .toolbar select{font:inherit; font-size:13.5px; font-weight:600; padding:9px 10px; border-radius:10px; border:1.5px solid var(--border,#e5dcc8); background:#fff; color:var(--ink,#1c1917); min-height:44px}
+  .skel{border-radius:16px; overflow:hidden; background:#fff; border:1px solid #eee3cb}
+  .skel .a{aspect-ratio:1/1; background:linear-gradient(100deg,#f1e9da 40%,#faf3e3 50%,#f1e9da 60%); background-size:200% 100%; animation:shim 1.2s infinite}
+  .skel .b{height:14px; margin:12px; border-radius:7px; background:linear-gradient(100deg,#f1e9da 40%,#faf3e3 50%,#f1e9da 60%); background-size:200% 100%; animation:shim 1.2s infinite}
+  .skel .c{height:14px; margin:0 12px 14px; width:55%; border-radius:7px; background:linear-gradient(100deg,#f1e9da 40%,#faf3e3 50%,#f1e9da 60%); background-size:200% 100%; animation:shim 1.2s infinite}
+  @keyframes shim{to{background-position:-200% 0}}
+  .btn-share{background:#fff; color:var(--maroon); border:1.5px solid var(--gold); margin-top:10px}
+  .clearbtn{margin-top:12px; background:var(--maroon); color:#fff; border:none; font:inherit; font-weight:700; padding:11px 18px; border-radius:999px; cursor:pointer}
   .wa-float{position:fixed; right:16px; bottom:86px; z-index:30; background:#25d366; color:#fff; border-radius:999px; padding:12px 18px; font-weight:700; text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.3); font-size:15px}
   .staff-fab{position:fixed; right:16px; bottom:22px; z-index:30; background:var(--maroon); color:#fff; border:1.5px solid var(--gold); border-radius:999px; padding:12px 18px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.3); font-size:15px}
   /* modal */
@@ -114,9 +127,25 @@
 
 <div class="chips" id="chips"></div>
 
+<div class="toolbar">
+  <span class="cnt" id="countLbl"></span>
+  <select id="sortSel" aria-label="Sort products">
+    <option value="featured">Sort: Featured</option>
+    <option value="low">Price: Low to High</option>
+    <option value="high">Price: High to Low</option>
+  </select>
+</div>
+
 <main>
   <div id="status" class="loading">Loading the collection…</div>
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid">
+    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
+  </div>
 </main>
 
 <footer>Bookings are taken personally on WhatsApp — tap any product, or the WhatsApp button, to book.</footer>
@@ -232,6 +261,7 @@ async function loadProducts(){
     $("status").style.display = products.length ? "none" : "block";
     if(!products.length) $("status").textContent = "New collection coming soon. Please check back, or ask us on WhatsApp.";
   }catch(e){
+    $("grid").innerHTML = "";
     $("status").textContent = "Could not load the collection. Please check your connection and refresh.";
   }
 }
@@ -243,22 +273,31 @@ function renderChips(){
   $("chips").innerHTML = cats().map(c=>`<button class="chip ${c===activeCat?'on':''}" data-cat="${c}">${c}</button>`).join("");
   document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{activeCat=b.dataset.cat; renderChips(); renderGrid();});
 }
+let sortMode = "featured";
 function renderGrid(){
   const q = $("search").value.trim().toLowerCase();
   const list = products.filter(p => p.inStock !== false)
     .filter(p => activeCat==="All" || p.category===activeCat)
     .filter(p => !q || (p.name+" "+p.category+" "+(p.description||"")).toLowerCase().includes(q));
+  if (sortMode === "low") list.sort((a,b) => (a.price||Infinity) - (b.price||Infinity));
+  if (sortMode === "high") list.sort((a,b) => (b.price||0) - (a.price||0));
+  $("countLbl").textContent = products.length ? list.length + (list.length === 1 ? " piece" : " pieces") : "";
   $("grid").innerHTML = list.map(p=>`
     <article class="card" data-code="${p.code}">
       ${p.photoUrl ? `<img loading="lazy" src="${p.photoUrl}" alt="">` : `<div class="ph">✨</div>`}
+      ${(p.left===1 || p.left===2) ? `<span class="leftbadge">Only ${p.left} left!</span>` : ""}
       <div class="info"><span class="cat">${p.category||""}</span><h3>${p.name}</h3>
       <div class="price">${p.price ? inr(p.price) : "Price on request"}</div></div>
     </article>`).join("");
   document.querySelectorAll(".card").forEach(c=>c.onclick=()=>showDetail(c.dataset.code));
   if(products.length) $("status").style.display = list.length ? "none" : "block";
-  if(!list.length && products.length) $("status").textContent = "Nothing matches that search.";
+  if(!list.length && products.length){
+    $("status").innerHTML = 'No pieces match that search.<br><button class="clearbtn" id="clearSearch">Show everything</button>';
+    $("clearSearch").onclick = ()=>{ $("search").value=""; activeCat="All"; renderChips(); renderGrid(); };
+  }
 }
 $("search").addEventListener("input", renderGrid);
+$("sortSel").addEventListener("change", e=>{ sortMode = e.target.value; renderGrid(); });
 
 function showDetail(code){
   const p = products.find(x=>String(x.code)===String(code)); if(!p) return;
@@ -268,8 +307,10 @@ function showDetail(code){
     ${p.photoUrl ? `<img class="big" src="${p.photoUrl}" alt="">` : `<div class="ph" style="border-radius:12px;aspect-ratio:1/1;background:linear-gradient(135deg,#f6ecd2,#ecd9a8);display:flex;align-items:center;justify-content:center;font-size:64px">✨</div>`}
     <h2>${p.name}</h2>
     <div class="price">${p.price ? inr(p.price) : "Price on request"}</div>
+    ${(p.left===1 || p.left===2) ? `<div><span class="leftline">Only ${p.left} left — book soon!</span></div>` : ""}
     ${p.description ? `<p class="desc">${p.description}</p>` : ""}
-    <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>`;
+    <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>
+    <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + location.origin + "/")}">Share with a friend</a>`;
   openOverlay("detailOverlay");
 }
 
