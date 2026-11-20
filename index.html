@@ -80,6 +80,7 @@
   .trust-it .st{color:var(--goldb); font-size:15px}
   .trust-it b{display:block; color:var(--brand); font-size:13.5px; margin:3px 0 1px}
   .d-sec{padding:54px 0 6px}
+  #dCollection{scroll-margin-top:96px}
   .d-sec .sec-title{font-size:36px}
   .d-tiles{display:grid; grid-template-columns:repeat(6,1fr); gap:16px; margin-top:28px}
   .d-tile{cursor:pointer; text-align:center}
@@ -191,6 +192,7 @@
   .dt-price{font-size:21px; font-weight:800; color:var(--brand)}
   .dt-desc{color:#57493A; font-size:14.5px; line-height:1.65; white-space:pre-wrap; margin:12px 0 0}
   .dt-code{margin-top:14px; font-size:12px; color:var(--muted); letter-spacing:.6px}
+  .dt-trust{margin-top:18px; padding-top:14px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); line-height:1.6}
   .btn{display:block; width:100%; text-align:center; padding:15px; border-radius:999px; border:none; font-size:15.5px; font-weight:800; cursor:pointer; margin-top:14px; text-decoration:none}
   .btn-wa{background:var(--wa); color:#fff}
   .btn-share{background:#fff; color:var(--brand); border:1.5px solid var(--goldb)}
@@ -502,6 +504,7 @@ async function loadProducts(){
     if (c && Array.isArray(c.products) && c.products.length){
       products = c.products; hadCache = true;
       renderAll();
+      openDeepLink();
     }
   } catch(e){}
   try {
@@ -542,6 +545,7 @@ function showDetail(code){
       <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>
       <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + link)}">Share with a friend</a>
       <div class="dt-code">Product code: ${esc(p.code)}</div>
+      <div class="dt-trust">✦ Home delivery available — the charge is confirmed on WhatsApp before you pay<br>✦ Cash &amp; UPI accepted</div>
     </div>`;
   openOverlay("detailOverlay");
 }

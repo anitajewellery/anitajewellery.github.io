@@ -1,4 +1,4 @@
-const CACHE = "anita-jewellery-v8";
+const CACHE = "anita-jewellery-v9";
 const IMG_CACHE = "anita-images-v1";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", e => {
@@ -9,9 +9,23 @@ self.addEventListener("activate", e => {
 });
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
-  // App shell: cache-first.
+  // App shell: network-first, so a redesign reaches returning visitors on
+  // their next visit; the cache is only the offline fallback.
   if (url.origin === location.origin) {
-    e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));
+    e.respondWith((async () => {
+      try {
+        const res = await fetch(e.request);
+        if (res && res.status === 200) {
+          const cache = await caches.open(CACHE);
+          cache.put(e.request, res.clone());
+        }
+        return res;
+      } catch (err) {
+        const hit = await caches.match(e.request);
+        if (hit) return hit;
+        throw err;
+      }
+    })());
     return;
   }
   // Product photos (Drive thumbnails): cache-first — a photo's URL only changes when the photo does.
