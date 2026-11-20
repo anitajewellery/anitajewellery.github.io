@@ -148,7 +148,7 @@
   </div>
 </main>
 
-<footer>Bookings are taken personally on WhatsApp — tap any product, or the WhatsApp button, to book.</footer>
+<footer>Bookings are taken personally on WhatsApp — tap any product, or the WhatsApp button, to book.<br>Home delivery is available — the delivery charge is confirmed on WhatsApp before you pay. Cash &amp; UPI accepted.</footer>
 
 <a class="wa-float" id="waFloat" target="_blank" rel="noopener">💬 WhatsApp</a>
 
@@ -261,6 +261,7 @@ async function loadProducts(){
       products = c.products; hadCache = true;
       renderChips(); renderGrid(); renderStock();
       $("status").style.display = "none";
+      openDeepLink();
     }
   }catch(e){}
   try{
@@ -269,6 +270,7 @@ async function loadProducts(){
     products = (d.products || []);
     try{ localStorage.setItem("aj_shop_products", JSON.stringify({ ts: Date.now(), products })); }catch(e){}
     renderChips(); renderGrid(); renderStock();
+    openDeepLink();
     $("status").style.display = products.length ? "none" : "block";
     if(!products.length) $("status").textContent = "New collection coming soon. Please check back, or ask us on WhatsApp.";
   }catch(e){
@@ -314,6 +316,10 @@ $("sortSel").addEventListener("change", e=>{ sortMode = e.target.value; renderGr
 
 function showDetail(code){
   const p = products.find(x=>String(x.code)===String(code)); if(!p) return;
+  /* Every product has its own link (?p=CODE) so Share and bookmarks land on
+     this exact piece, not just the shop's front page. */
+  history.replaceState(null, "", "?p=" + encodeURIComponent(p.code));
+  const link = location.origin + "/?p=" + encodeURIComponent(p.code);
   const text = `Hello Anita Jewellery, I want to book this item:\n\n${p.name}${p.price ? " — " + inr(p.price) : ""}\nCode: ${p.code}\n\nPlease confirm availability.`;
   $("detailSheet").innerHTML = `
     <button class="x" data-close="detailOverlay">✕</button>
@@ -323,17 +329,30 @@ function showDetail(code){
     ${(p.left===1 || p.left===2) ? `<div><span class="leftline">Only ${p.left} left — book soon!</span></div>` : ""}
     ${p.description ? `<p class="desc">${p.description}</p>` : ""}
     <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>
-    <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + location.origin + "/")}">Share with a friend</a>`;
+    <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + link)}">Share with a friend</a>`;
   openOverlay("detailOverlay");
 }
 
 /* ---------- overlays ---------- */
 function openOverlay(id){ $(id).classList.add("open"); }
-function closeOverlay(id){ $(id).classList.remove("open"); }
+function closeOverlay(id){
+  $(id).classList.remove("open");
+  if(id === "detailOverlay") history.replaceState(null, "", location.pathname);
+}
 document.addEventListener("click", e=>{
   const c = e.target.closest("[data-close]"); if(c) closeOverlay(c.dataset.close);
-  if(e.target.classList.contains("overlay")) e.target.classList.remove("open");
+  if(e.target.classList.contains("overlay")) closeOverlay(e.target.id);
 });
+
+/* Arriving with a product link (?p=CODE) opens that piece straight away. */
+let deepOpened = false;
+function openDeepLink(){
+  if (deepOpened) return;
+  const code = new URLSearchParams(location.search).get("p");
+  if (!code) return;
+  const p = products.find(x => String(x.code) === String(code) && x.inStock !== false);
+  if (p){ deepOpened = true; showDetail(p.code); }
+}
 
 /* ---------- staff PIN (device-level) ---------- */
 async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }

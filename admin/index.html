@@ -354,15 +354,20 @@
             <input id="rDisc" type="number" min="0" value="0" inputmode="numeric">
           </div>
           <div style="flex:1">
-            <label>Payment</label>
-            <div class="chips paychips" id="payChips" role="group" aria-label="Payment mode"></div>
+            <label for="rDel">Delivery (₹)</label>
+            <input id="rDel" type="number" min="0" value="0" inputmode="numeric">
           </div>
+        </div>
+        <div>
+          <label>Payment</label>
+          <div class="chips paychips" id="payChips" role="group" aria-label="Payment mode"></div>
         </div>
         <label for="rNotes">Notes <span style="color:var(--muted); font-weight:500">(optional)</span></label>
         <input id="rNotes" placeholder="Optional note">
         <div class="totals" aria-live="polite">
           <div class="r"><span>Subtotal</span><b id="rSub">₹0</b></div>
           <div class="r"><span>Discount</span><b id="rDiscShow">₹0</b></div>
+          <div class="r"><span>Delivery</span><b id="rDelShow">₹0</b></div>
           <div class="r grand"><span>Total</span><span id="rTotal">₹0</span></div>
         </div>
       </div>
@@ -743,6 +748,7 @@ function renderToday(){
   $("todaySales").style.display = "flex";
 }
 $("rDisc").addEventListener("input", calc);
+$("rDel").addEventListener("input", calc);
 function receiptData(){
   const items = [...document.querySelectorAll("#rItems .itemrow")].map(r => ({
     name: r.querySelector(".n").value.trim(),
@@ -751,20 +757,58 @@ function receiptData(){
   })).filter(i => i.name);
   const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
   const discount = Math.min(Number($("rDisc").value || 0), subtotal);
-  return { items, subtotal, discount, total: subtotal - discount };
+  /* Delivery lives only in this admin (local history + the customer's bill),
+     never a Sheet column; the synced total includes it so Sheet totals match. */
+  const delivery = Number($("rDel").value || 0);
+  return { items, subtotal, discount, delivery, total: subtotal - discount + delivery };
 }
 function calc(){
   const d = receiptData();
   $("rSub").textContent = inr(d.subtotal);
   $("rDiscShow").textContent = inr(d.discount);
+  $("rDelShow").textContent = inr(d.delivery);
   $("rTotal").textContent = inr(d.total);
 }
 addItemRow(); calc();
 
+/* Draft autosave: the half-typed bill survives the page being closed. */
+function draftSave(){
+  try{
+    const items = [...document.querySelectorAll("#rItems .itemrow")].map(r => ({
+      n: r.querySelector(".n").value, q: r.querySelector(".q").value, p: r.querySelector(".p").value
+    }));
+    localStorage.setItem("aj_receipt_draft", JSON.stringify({
+      name: $("rName").value, phone: $("rPhone").value, addr: $("rAddr").value, notes: $("rNotes").value,
+      disc: $("rDisc").value, del: $("rDel").value, pay: selPay, items
+    }));
+  }catch(e){}
+}
+function draftRestore(){
+  let d = null;
+  try{ d = JSON.parse(localStorage.getItem("aj_receipt_draft") || "null"); }catch(e){}
+  if (d){
+    $("rName").value = d.name || ""; $("rPhone").value = d.phone || ""; $("rAddr").value = d.addr || "";
+    $("rNotes").value = d.notes || ""; $("rDisc").value = d.disc ?? 0; $("rDel").value = d.del ?? 0;
+    if (d.pay) document.querySelectorAll("#payChips .chip").forEach(x => { const on = x.dataset.pay === d.pay; x.setAttribute("aria-pressed", on ? "true" : "false"); if (on) selPay = d.pay; });
+    if (Array.isArray(d.items) && d.items.length){
+      $("rItems").innerHTML = "";
+      d.items.forEach(it => { addItemRow(); const rows = document.querySelectorAll("#rItems .itemrow"); const row = rows[rows.length - 1];
+        row.querySelector(".n").value = it.n || ""; row.querySelector(".q").value = it.q || 1; row.querySelector(".p").value = it.p || ""; });
+    }
+    calc();
+  } else {
+    const last = Number(localStorage.getItem("aj_last_delivery") || 0);
+    if (last){ $("rDel").value = last; calc(); }
+  }
+}
+$("receiptForm").addEventListener("input", draftSave);
+$("receiptForm").addEventListener("click", () => setTimeout(draftSave, 0));
+draftRestore();
+
 function histNorm(x){
   if (x && x.receiptNo){ x.voided = !!x.voided; return x; }
   return { receiptNo: x.no, saleDate: x.date, date: x.date, customerName: x.name, customerPhone: "", customerAddress: x.customerAddress || x.address || "",
-    items: "", itemsList: [], subtotal: x.total, discount: 0, total: x.total, paymentMode: "", notes: "", photo: "", voided: false };
+    items: "", itemsList: [], subtotal: x.total, discount: 0, delivery: 0, total: x.total, paymentMode: "", notes: "", photo: "", voided: false };
 }
 function loadHist(){
   let h = [];
@@ -792,7 +836,7 @@ function parseItemsText(text){
 function serverNorm(s){
   return { receiptNo: s.receiptNo, saleDate: s.saleDate, date: s.saleDate, customerName: s.customerName,
     customerPhone: s.customerPhone, customerAddress: s.customerAddress || "", items: s.items, itemsList: parseItemsText(s.items),
-    subtotal: s.subtotal, discount: s.discount, total: s.total, paymentMode: s.paymentMode, notes: s.notes, photo: s.photo || "",
+    subtotal: s.subtotal, discount: s.discount, delivery: 0, total: s.total, paymentMode: s.paymentMode, notes: s.notes, photo: s.photo || "",
     voided: s.status === "VOID" };
 }
 async function syncHistFromServer(){
@@ -851,7 +895,7 @@ function showReceipt(r, isDup){
   lastReceipt = r;
   r.duplicate = !!isDup;
   const stamp = r.voided ? "— VOID —" : (isDup ? "— DUPLICATE —" : "");
-  const no = r.receiptNo, date = r.saleDate, d = { items: r.itemsList || [], subtotal: r.subtotal, discount: r.discount, total: r.total };
+  const no = r.receiptNo, date = r.saleDate, d = { items: r.itemsList || [], subtotal: r.subtotal, discount: r.discount, delivery: r.delivery || 0, total: r.total };
   $("receiptCard").innerHTML =
     '<div class="rh"><h2>ANITA JEWELLERY</h2><p>Gold-Plated &amp; Imitation Jewellery<br>WhatsApp: +91 8014998953</p></div>' +
     (stamp ? '<p style="text-align:center; color:var(--bad); font-weight:800; letter-spacing:2px; margin:0 0 10px">' + stamp + '</p>' : "") +
@@ -865,6 +909,7 @@ function showReceipt(r, isDup){
     '</table>' +
     '<div class="rrow"><span>Subtotal</span><span>' + inr(d.subtotal) + '</span></div>' +
     (d.discount ? '<div class="rrow"><span>Discount</span><span>− ' + inr(d.discount) + '</span></div>' : "") +
+    (d.delivery ? '<div class="rrow"><span>Delivery</span><span>+ ' + inr(d.delivery) + '</span></div>' : "") +
     '<div class="rtotal"><span>TOTAL</span><b>' + inr(d.total) + '</b></div>' +
     '<div class="rrow" style="margin-top:8px"><span>Payment</span><span>' + esc(r.paymentMode || "") + '</span></div>' +
     (r.notes ? '<div class="rrow"><span>Notes</span><span>' + esc(r.notes) + '</span></div>' : "") +
@@ -878,6 +923,7 @@ function showReceipt(r, isDup){
     d.items.map(i => '<tr><td>' + esc(i.name) + '</td><td class="c">' + i.qty + '</td><td class="r">' + inr(i.price) + '</td><td class="r">' + inr(i.qty * i.price) + '</td></tr>').join("") +
     '<tr><td colspan="3">Subtotal</td><td class="r">' + inr(d.subtotal) + '</td></tr>' +
     (d.discount ? '<tr><td colspan="3">Discount</td><td class="r">- ' + inr(d.discount) + '</td></tr>' : "") +
+    (d.delivery ? '<tr><td colspan="3">Delivery</td><td class="r">+ ' + inr(d.delivery) + '</td></tr>' : "") +
     '<tr class="tt"><td colspan="3"><b>TOTAL</b></td><td class="r"><b>' + inr(d.total) + '</b></td></tr></table><hr>' +
     '<p>Payment: ' + esc(r.paymentMode || "") + (r.notes ? '<br>Notes: ' + esc(r.notes) : "") + '</p><p class="c">Thank you for shopping with us!</p>';
 
@@ -899,17 +945,24 @@ $("rMake").onclick = async () => {
   const bad = !d.items.length;
   $("itemsErr").classList.toggle("show", bad);
   if (bad){ window.scrollTo({top: 0, behavior: "smooth"}); return; }
+  if (d.items.some(i => !i.price) && !confirm("One of the items has a rate of ₹0.\n\nIf it is a free gift, tap OK to generate anyway — otherwise Cancel and add the rate first.")) return;
   const btn = $("rMake");
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span><span>Generating…</span>';
-  const no = "AJ-" + new Date().toISOString().slice(0, 10).replaceAll("-", "") + "-" + String(Date.now()).slice(-4);
+  /* Random suffix, checked against this device's history, so two bills can
+     no longer share a number by landing in the same split-second. */
+  const known = new Set(loadHist().map(x => x.receiptNo));
+  let no = "", tries = 0;
+  do { no = "AJ-" + new Date().toISOString().slice(0, 10).replaceAll("-", "") + "-" + (1000 + Math.floor(Math.random() * 9000)); tries++; } while (known.has(no) && tries < 12);
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   lastReceipt = { receiptNo: no, saleDate: date, date, customerName: $("rName").value.trim(), customerPhone: $("rPhone").value.trim(), customerAddress: $("rAddr").value.trim(),
     items: d.items.map(i => i.name + " x" + i.qty + " - " + inr(i.qty * i.price)).join("; "),
-    itemsList: d.items, subtotal: d.subtotal, discount: d.discount, total: d.total,
+    itemsList: d.items, subtotal: d.subtotal, discount: d.discount, delivery: d.delivery, total: d.total,
     paymentMode: selPay, notes: $("rNotes").value.trim(), photo: "" };
 
   showReceipt(lastReceipt, false);
   saveHist(lastReceipt);
+  localStorage.removeItem("aj_receipt_draft");
+  localStorage.setItem("aj_last_delivery", String(d.delivery));
   if (navigator.vibrate) navigator.vibrate(12);
 
   const badge = $("syncBadge");
@@ -1019,6 +1072,10 @@ function receiptPhotoBlob(r){
       ctx.textAlign = "left"; ctx.fillText("Discount", nameX, y);
       ctx.textAlign = "right"; ctx.fillText("− " + inr(r.discount), amtX, y); y += 22;
     }
+    if (r.delivery){
+      ctx.textAlign = "left"; ctx.fillText("Delivery", nameX, y);
+      ctx.textAlign = "right"; ctx.fillText("+ " + inr(r.delivery), amtX, y); y += 22;
+    }
     y += 2;
     ctx.fillStyle = BAND;
     ctx.beginPath(); ctx.roundRect(PAD, y - 17, W - PAD * 2, 42, 10); ctx.fill();
@@ -1098,7 +1155,9 @@ $("rNew").onclick = () => {
   $("receiptDone").style.display = "none";
   $("receiptForm").style.display = "block";
   ["rName","rPhone","rAddr","rNotes"].forEach(i => $(i).value = "");
-  $("rDisc").value = 0; $("rItems").innerHTML = ""; addItemRow(); calc();
+  $("rDisc").value = 0; $("rDel").value = Number(localStorage.getItem("aj_last_delivery") || 0);
+  localStorage.removeItem("aj_receipt_draft");
+  $("rItems").innerHTML = ""; addItemRow(); calc();
   window.scrollTo({top: 0});
 };
 
