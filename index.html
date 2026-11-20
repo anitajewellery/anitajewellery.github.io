@@ -5,321 +5,525 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Anita Jewellery — Gold-Plated & Imitation Jewellery</title>
 <meta name="description" content="Anita Jewellery — readymade gold-plated and imitation jewellery. Browse the collection and book on WhatsApp.">
-<meta name="theme-color" content="#5c1a1a">
+<meta name="theme-color" content="#401313">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --maroon:#5c1a1a; --maroon2:#7a2424; --gold:#c9a227; --gold2:#e8c95a;
-    --cream:#fdf8ee; --ink:#2b2118; --muted:#8a7a63; --card:#ffffff;
-    --ok:#1e7d46; --bad:#b3261e; --radius:14px;
+    --brand:#401313; --brand2:#5C1A1A; --gold:#A16207; --goldb:#C9A227;
+    --cream:#F7EBD2; --ivory:#FAF7F2; --paper:#FDFBF7;
+    --ink:#1C1917; --muted:#6F6558; --line:#E9E0CB;
+    --wa:#1DA851; --bad:#B91C1C;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html{scroll-behavior:smooth}
-  body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--cream); color:var(--ink)}
-  header{background:linear-gradient(135deg,var(--maroon),var(--maroon2)); color:#fff; padding:18px 16px 14px; position:sticky; top:0; z-index:20; box-shadow:0 2px 10px rgba(0,0,0,.25)}
-  .brand{display:flex; align-items:center; gap:12px}
-  .brand .logo{width:44px; height:44px; border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--gold2), var(--gold)); display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--maroon); font-weight:800; flex:none}
-  .brand h1{font-size:21px; margin:0; letter-spacing:.4px}
-  .brand p{margin:2px 0 0; font-size:12px; color:#f3d98b}
-  .searchbar{margin-top:12px; display:flex; gap:8px}
-  .searchbar input{flex:1; padding:11px 14px; border-radius:999px; border:none; font-size:15px; outline:none}
-  .chips{display:flex; gap:8px; overflow-x:auto; padding:12px 16px 4px; scrollbar-width:none}
-  .chips::-webkit-scrollbar{display:none}
-  .chip{flex:none; padding:7px 14px; border-radius:999px; border:1.5px solid var(--gold); background:#fff; color:var(--maroon); font-size:13.5px; font-weight:600; cursor:pointer}
-  .chip.on{background:var(--maroon); color:#fff; border-color:var(--maroon)}
-  main{padding:10px 14px 90px; max-width:900px; margin:0 auto}
-  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
-  @media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--card); border-radius:var(--radius); overflow:hidden; box-shadow:0 1px 5px rgba(60,30,0,.12); cursor:pointer; display:flex; flex-direction:column}
-  .card img{width:100%; aspect-ratio:1/1; object-fit:cover; background:#f3ead6}
-  .card .ph{width:100%; aspect-ratio:1/1; background:linear-gradient(135deg,#f6ecd2,#ecd9a8); display:flex; align-items:center; justify-content:center; font-size:44px}
-  .card .info{padding:10px 12px 12px; display:flex; flex-direction:column; gap:3px; flex:1}
-  .card h3{margin:0; font-size:15px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em}
-  .card .cat{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
-  .card .price{margin-top:auto; font-weight:800; color:var(--maroon); font-size:16px}
-  .empty,.loading{text-align:center; color:var(--muted); padding:44px 16px; font-size:15px}
-  .card{position:relative}
-  .leftbadge{position:absolute; top:10px; left:10px; background:#b91c1c; color:#fff; font-size:12px; font-weight:800; padding:5px 10px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.25); letter-spacing:.2px}
-  .leftline{display:inline-block; margin-top:8px; background:#fdf0d5; color:#b91c1c; font-weight:800; font-size:13.5px; padding:6px 12px; border-radius:999px}
-  .toolbar{display:flex; justify-content:space-between; align-items:center; gap:10px; max-width:1060px; margin:2px auto 10px; padding:0 14px}
-  .toolbar .cnt{font-size:13px; color:var(--muted); font-weight:600}
-  .toolbar select{font:inherit; font-size:13.5px; font-weight:600; padding:9px 10px; border-radius:10px; border:1.5px solid var(--border,#e5dcc8); background:#fff; color:var(--ink,#1c1917); min-height:44px}
-  .skel{border-radius:16px; overflow:hidden; background:#fff; border:1px solid #eee3cb}
-  .skel .a{aspect-ratio:1/1; background:linear-gradient(100deg,#f1e9da 40%,#faf3e3 50%,#f1e9da 60%); background-size:200% 100%; animation:shim 1.2s infinite}
-  .skel .b{height:14px; margin:12px; border-radius:7px; background:linear-gradient(100deg,#f1e9da 40%,#faf3e3 50%,#f1e9da 60%); background-size:200% 100%; animation:shim 1.2s infinite}
-  .skel .c{height:14px; margin:0 12px 14px; width:55%; border-radius:7px; background:linear-gradient(100deg,#f1e9da 40%,#faf3e3 50%,#f1e9da 60%); background-size:200% 100%; animation:shim 1.2s infinite}
+  body{margin:0; font-family:Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--paper); color:var(--ink)}
+  .serif{font-family:"Cormorant Garamond",Georgia,serif}
+  img{display:block}
+  button{font-family:inherit}
+  /* Which site is showing: two separate designs, one per form factor. */
+  .site-m{display:block}
+  .site-d{display:none}
+  @media(min-width:1024px){ .site-m{display:none} .site-d{display:block} }
+
+  .ann{background:var(--brand); color:var(--cream); text-align:center; letter-spacing:2.2px; font-weight:600}
+  .eyebrow{font-size:11px; letter-spacing:2.6px; color:var(--gold); font-weight:700; text-transform:uppercase}
+  .sec-title{font-family:"Cormorant Garamond",Georgia,serif; font-weight:600; color:var(--brand); text-align:center; margin:0}
+  .sec-rule{width:46px; height:2px; background:var(--goldb); margin:10px auto 0}
+  .leftbadge{position:absolute; top:10px; left:10px; background:var(--bad); color:#fff; font-size:11.5px; font-weight:800; padding:5px 10px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.25); z-index:2}
+  .leftline{display:inline-block; margin-top:10px; background:#FDF0D5; color:var(--bad); font-weight:800; font-size:13.5px; padding:6px 12px; border-radius:999px}
+  .ph{width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-family:"Cormorant Garamond",Georgia,serif; font-size:64px; font-weight:600; color:rgba(64,19,19,.45)}
+  .g1{background:linear-gradient(135deg,#E9D9AE,#C9A227)} .g2{background:linear-gradient(135deg,#DCCBEA,#9A76BC)}
+  .g3{background:linear-gradient(135deg,#F3D9C8,#C97B4A)} .g4{background:linear-gradient(135deg,#CFE3D2,#5E8C61)}
+  .skel{border-radius:14px; overflow:hidden; background:#fff; border:1px solid var(--line)}
+  .skel .a{aspect-ratio:4/5; background:linear-gradient(100deg,#F1E9DA 40%,#FBF4E4 50%,#F1E9DA 60%); background-size:200% 100%; animation:shim 1.2s infinite}
+  .skel .b{height:13px; margin:12px; border-radius:7px; background:linear-gradient(100deg,#F1E9DA 40%,#FBF4E4 50%,#F1E9DA 60%); background-size:200% 100%; animation:shim 1.2s infinite}
+  .skel .c{height:13px; margin:0 12px 14px; width:55%; border-radius:7px; background:linear-gradient(100deg,#F1E9DA 40%,#FBF4E4 50%,#F1E9DA 60%); background-size:200% 100%; animation:shim 1.2s infinite}
   @keyframes shim{to{background-position:-200% 0}}
-  .btn-share{background:#fff; color:var(--maroon); border:1.5px solid var(--gold); margin-top:10px}
-  .clearbtn{margin-top:12px; background:var(--maroon); color:#fff; border:none; font:inherit; font-weight:700; padding:11px 18px; border-radius:999px; cursor:pointer}
-  .wa-float{position:fixed; right:16px; bottom:86px; z-index:30; background:#25d366; color:#fff; border-radius:999px; padding:12px 18px; font-weight:700; text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.3); font-size:15px}
-  .staff-fab{position:fixed; right:16px; bottom:22px; z-index:30; background:var(--maroon); color:#fff; border:1.5px solid var(--gold); border-radius:999px; padding:12px 18px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.3); font-size:15px}
-  /* modal */
-  .overlay{position:fixed; inset:0; background:rgba(20,8,4,.6); z-index:50; display:none; align-items:flex-end; justify-content:center}
+  .empty{text-align:center; color:var(--muted); padding:40px 16px; font-size:14.5px; grid-column:1/-1}
+  .clearbtn{margin-top:12px; background:var(--brand); color:#fff; border:none; font-weight:700; padding:11px 20px; border-radius:999px; cursor:pointer; font-size:14px}
+
+  /* ================= DESKTOP SITE ================= */
+  .site-d .ann{font-size:11px; padding:9px 16px}
+  .d-wrap{max-width:1240px; margin:0 auto; padding:0 32px}
+  .d-header{position:sticky; top:0; z-index:40; background:rgba(253,251,247,.96); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+  .d-header-in{display:flex; align-items:center; gap:20px; padding:16px 0}
+  .d-nav{flex:1; display:flex; gap:22px; flex-wrap:wrap}
+  .d-nav a{font-size:12px; letter-spacing:1.6px; font-weight:700; color:var(--muted); text-decoration:none; cursor:pointer; text-transform:uppercase}
+  .d-nav a:hover,.d-nav a.on{color:var(--brand)}
+  .d-logo{text-align:center; cursor:pointer}
+  .d-logo .nm{font-family:"Cormorant Garamond",Georgia,serif; font-size:30px; font-weight:700; letter-spacing:4px; color:var(--brand); line-height:1}
+  .d-logo .sb{font-size:9.5px; letter-spacing:3.4px; color:var(--gold); font-weight:700; margin-top:4px}
+  .d-actions{flex:1; display:flex; justify-content:flex-end; align-items:center; gap:12px}
+  .d-search{display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:9px 15px; min-width:230px}
+  .d-search input{border:none; outline:none; font:inherit; font-size:13.5px; width:100%; background:transparent; color:var(--ink)}
+  .d-wa{border:1.5px solid var(--gold); color:var(--brand); font-weight:700; font-size:13px; padding:10px 18px; border-radius:999px; text-decoration:none; white-space:nowrap}
+  .d-wa:hover{background:var(--cream)}
+  .d-hero{display:grid; grid-template-columns:1.02fr .98fr; background:var(--ivory); border-bottom:1px solid var(--line)}
+  .d-hero-t{display:flex; flex-direction:column; justify-content:center; padding:64px 8px 64px 0; max-width:560px}
+  .d-hero-t h1{font-family:"Cormorant Garamond",Georgia,serif; font-size:56px; line-height:1.04; font-weight:600; color:var(--brand); margin:14px 0 16px}
+  .d-hero-t p{font-size:15.5px; line-height:1.65; color:var(--muted); margin:0; max-width:46ch}
+  .d-hero-btns{display:flex; gap:12px; margin-top:28px}
+  .btn-solid{background:var(--brand); color:#fff; font-weight:700; font-size:14px; padding:14px 26px; border-radius:999px; border:none; cursor:pointer; text-decoration:none}
+  .btn-line{border:1.5px solid var(--gold); color:var(--brand); font-weight:700; font-size:14px; padding:14px 26px; border-radius:999px; text-decoration:none; background:transparent; cursor:pointer}
+  .d-hero-i{position:relative; min-height:520px}
+  .d-hero-i img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+  .d-hero-i .ph{position:absolute; inset:0; font-size:120px}
+  .d-hero-cap{position:absolute; left:18px; bottom:18px; z-index:2; background:rgba(253,251,247,.94); border:1px solid var(--line); border-radius:999px; padding:9px 16px; font-size:13px; font-weight:600; color:var(--brand); cursor:pointer; box-shadow:0 6px 18px rgba(64,19,19,.18)}
+  .d-hero-cap b{color:var(--gold)}
+  .d-trust{border-bottom:1px solid var(--line); background:var(--paper)}
+  .d-trust-in{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding:22px 0}
+  .trust-it{text-align:center; font-size:13px; color:var(--muted); line-height:1.5}
+  .trust-it .st{color:var(--goldb); font-size:15px}
+  .trust-it b{display:block; color:var(--brand); font-size:13.5px; margin:3px 0 1px}
+  .d-sec{padding:54px 0 6px}
+  .d-sec .sec-title{font-size:36px}
+  .d-tiles{display:grid; grid-template-columns:repeat(6,1fr); gap:16px; margin-top:28px}
+  .d-tile{cursor:pointer; text-align:center}
+  .d-tile .im{aspect-ratio:1/1; border-radius:16px; overflow:hidden; position:relative; border:1px solid var(--line)}
+  .d-tile .im img{width:100%; height:100%; object-fit:cover}
+  .d-tile:hover .im{box-shadow:0 10px 24px rgba(64,19,19,.16)}
+  .d-tile span{display:block; margin-top:10px; font-size:12px; letter-spacing:1.8px; font-weight:700; color:var(--brand); text-transform:uppercase}
+  .d-tile small{color:var(--muted); font-size:11.5px}
+  .d-new{display:grid; grid-template-columns:repeat(4,1fr); gap:22px; margin-top:28px}
+  .d-coll-head{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap}
+  .d-coll-head .sec-title{text-align:left}
+  .d-coll-head .sec-rule{margin:10px 0 0}
+  .d-tools{display:flex; align-items:center; gap:14px}
+  .d-count{font-size:13px; color:var(--muted); font-weight:600}
+  .d-sort{font:inherit; font-size:13px; font-weight:600; padding:10px 14px; border-radius:999px; border:1.5px solid var(--line); background:#fff; color:var(--ink); cursor:pointer}
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:20px}
+  .chip{padding:9px 18px; border-radius:999px; border:1.5px solid var(--goldb); background:#fff; color:var(--brand); font-size:13px; font-weight:700; cursor:pointer}
+  .chip.on{background:var(--brand); color:#fff; border-color:var(--brand)}
+  .d-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:22px; margin-top:24px; padding-bottom:14px}
+  .card{background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; cursor:pointer; position:relative; transition:transform .18s ease, box-shadow .18s ease; display:flex; flex-direction:column}
+  .card:hover{transform:translateY(-4px); box-shadow:0 14px 30px rgba(64,19,19,.13)}
+  .card .im{aspect-ratio:4/5; position:relative; background:#F3EAD6}
+  .card .im img{width:100%; height:100%; object-fit:cover}
+  .card .tx{padding:14px 16px 16px; display:flex; flex-direction:column; gap:3px; flex:1}
+  .card .cat{font-size:10.5px; letter-spacing:2px; color:var(--gold); font-weight:700; text-transform:uppercase}
+  .card h3{margin:0; font-size:15.5px; font-weight:600; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .card .price{margin-top:auto; padding-top:6px; font-weight:800; color:var(--brand); font-size:16.5px}
+  .card .book{font-size:12.5px; color:var(--gold); font-weight:700; margin-top:3px}
+  .d-story{background:var(--ivory); border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-top:54px}
+  .d-story-in{display:grid; grid-template-columns:1fr 1fr; gap:48px; padding:58px 0; align-items:center}
+  .d-story h2{font-family:"Cormorant Garamond",Georgia,serif; font-size:38px; font-weight:600; color:var(--brand); margin:12px 0 14px; line-height:1.12}
+  .d-story p{font-size:15px; line-height:1.75; color:var(--muted); margin:0 0 12px}
+  .d-story .im{border-radius:18px; overflow:hidden; aspect-ratio:4/3; position:relative}
+  .d-story .im img{width:100%; height:100%; object-fit:cover}
+  .d-foot{background:var(--brand); color:#E9DFC9; margin-top:0}
+  .d-foot-in{display:grid; grid-template-columns:1.4fr 1fr 1.2fr 1fr; gap:36px; padding:52px 0 34px}
+  .d-foot h4{font-size:12px; letter-spacing:2.2px; color:var(--goldb); margin:0 0 14px; text-transform:uppercase}
+  .d-foot .bl{font-family:"Cormorant Garamond",Georgia,serif; font-size:25px; letter-spacing:2.5px; color:#fff; font-weight:700}
+  .d-foot p,.d-foot a{font-size:13.5px; line-height:1.75; color:#E9DFC9}
+  .d-foot a{display:block; text-decoration:none; cursor:pointer}
+  .d-foot a:hover{color:#fff}
+  .d-foot ol{margin:0; padding-left:18px; font-size:13.5px; line-height:1.8}
+  .d-foot-b{border-top:1px solid rgba(247,235,210,.22); padding:16px 0 20px; display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; font-size:12.5px; color:#CBBFA5}
+
+  /* ================= MOBILE SITE ================= */
+  .site-m{background:var(--paper); padding-bottom:86px}
+  .site-m .ann{font-size:9.5px; padding:7px 10px}
+  .m-header{background:var(--paper); padding:16px 16px 10px; text-align:center}
+  .m-logo{font-family:"Cormorant Garamond",Georgia,serif; font-size:27px; font-weight:700; letter-spacing:3px; color:var(--brand); line-height:1}
+  .m-logo-sb{font-size:8.5px; letter-spacing:3px; color:var(--gold); font-weight:700; margin-top:4px}
+  .m-search{margin-top:13px; display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:11px 16px}
+  .m-search input{border:none; outline:none; font:inherit; font-size:14.5px; width:100%; background:transparent; color:var(--ink)}
+  .m-cats{display:flex; gap:16px; overflow-x:auto; padding:14px 16px 6px; scrollbar-width:none}
+  .m-cats::-webkit-scrollbar{display:none}
+  .m-cat{flex:none; text-align:center; cursor:pointer; width:62px}
+  .m-cat .c{width:58px; height:58px; border-radius:50%; overflow:hidden; border:2px solid var(--line); margin:0 auto 5px; position:relative}
+  .m-cat .c img{width:100%; height:100%; object-fit:cover}
+  .m-cat .c .ph{font-size:22px}
+  .m-cat.on .c{border-color:var(--goldb)}
+  .m-cat span{font-size:11px; font-weight:700; color:var(--brand); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .m-hero{position:relative; margin:10px 16px 0; border-radius:20px; overflow:hidden; aspect-ratio:4/4.6; background:#E9D9AE}
+  .m-hero img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+  .m-hero .ph{position:absolute; inset:0; font-size:96px}
+  .m-hero-ov{position:absolute; left:0; right:0; bottom:0; padding:38px 18px 16px; background:linear-gradient(transparent, rgba(38,10,10,.85)); color:#fff; z-index:2}
+  .m-hero-ov .eyebrow{color:var(--goldb); font-size:9.5px}
+  .m-hero-ov h1{font-family:"Cormorant Garamond",Georgia,serif; font-size:29px; line-height:1.1; font-weight:600; margin:6px 0 10px}
+  .m-hero-ov .go{display:inline-block; background:var(--cream); color:var(--brand); font-weight:800; font-size:13px; padding:10px 18px; border-radius:999px; border:none; cursor:pointer}
+  .m-hero-cap{position:absolute; top:12px; right:12px; z-index:2; background:rgba(253,251,247,.94); border-radius:999px; padding:7px 12px; font-size:11.5px; font-weight:700; color:var(--brand); cursor:pointer}
+  .m-sec{padding:26px 16px 0}
+  .m-sec .sec-title{font-size:26px}
+  .m-newrail{display:flex; gap:12px; overflow-x:auto; padding:16px 16px 6px; scroll-snap-type:x mandatory; scrollbar-width:none}
+  .m-newrail::-webkit-scrollbar{display:none}
+  .m-newrail .card{flex:0 0 68%; scroll-snap-align:start}
+  .m-trust{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px}
+  .m-trust .trust-it{background:#fff; border:1px solid var(--line); border-radius:14px; padding:13px 10px}
+  .m-coll-tools{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:16px}
+  .m-chips{display:flex; gap:8px; overflow-x:auto; padding:14px 16px 2px; scrollbar-width:none}
+  .m-chips::-webkit-scrollbar{display:none}
+  .m-chips .chip{flex:none; padding:8px 15px; font-size:12.5px}
+  .m-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px 16px 4px}
+  .m-grid .card .im{aspect-ratio:1/1}
+  .m-grid .card .tx{padding:10px 12px 12px}
+  .m-grid .card h3{font-size:14px}
+  .m-grid .card .price{font-size:15px}
+  .m-grid .card .book{font-size:11.5px}
+  .m-story{margin:26px 16px 0; background:var(--ivory); border:1px solid var(--line); border-radius:18px; padding:22px 18px; text-align:center}
+  .m-story h2{font-family:"Cormorant Garamond",Georgia,serif; font-size:26px; font-weight:600; color:var(--brand); margin:10px 0 8px}
+  .m-story p{font-size:13.5px; line-height:1.7; color:var(--muted); margin:0}
+  .m-foot{background:var(--brand); color:#E9DFC9; margin-top:30px; padding:30px 20px 26px; text-align:center}
+  .m-foot .bl{font-family:"Cormorant Garamond",Georgia,serif; font-size:23px; letter-spacing:2.5px; color:#fff; font-weight:700}
+  .m-foot p{font-size:13px; line-height:1.75; margin:10px 0 0}
+  .m-foot .cats{margin-top:14px; font-size:12px; letter-spacing:1.6px; color:var(--goldb); font-weight:700; text-transform:uppercase; line-height:2}
+  .m-bar{position:fixed; left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:35; background:var(--wa); color:#fff; text-align:center; font-weight:800; font-size:15.5px; padding:15px; border-radius:16px; text-decoration:none; box-shadow:0 10px 26px rgba(20,90,45,.4)}
+  @media(min-width:1024px){ .m-bar{display:none} }
+
+  /* ============ shared: detail + float ============ */
+  .wa-float{position:fixed; right:22px; bottom:22px; z-index:35; background:var(--wa); color:#fff; border-radius:999px; padding:14px 22px; font-weight:800; text-decoration:none; box-shadow:0 8px 22px rgba(20,90,45,.35); font-size:15px; display:none}
+  @media(min-width:1024px){ .wa-float{display:block} }
+  .overlay{position:fixed; inset:0; background:rgba(24,8,4,.62); z-index:60; display:none; align-items:flex-end; justify-content:center}
   .overlay.open{display:flex}
-  .sheet{background:#fff; width:100%; max-width:560px; max-height:92vh; overflow-y:auto; border-radius:20px 20px 0 0; padding:18px 18px 28px; animation:up .22s ease}
-  @media(min-width:640px){.overlay{align-items:center}.sheet{border-radius:20px}}
+  .sheet{background:#fff; width:100%; height:100dvh; overflow-y:auto; padding:0 0 30px; animation:up .22s ease; position:relative}
   @keyframes up{from{transform:translateY(24px); opacity:.6}to{transform:none; opacity:1}}
-  .sheet img.big{width:100%; border-radius:12px; aspect-ratio:1/1; object-fit:cover; background:#f3ead6}
-  .sheet h2{margin:12px 0 4px; font-size:20px}
-  .sheet .price{font-size:19px; font-weight:800; color:var(--maroon)}
-  .sheet .desc{color:#57493a; font-size:14.5px; line-height:1.5; white-space:pre-wrap}
-  .btn{display:block; width:100%; text-align:center; padding:13px; border-radius:12px; border:none; font-size:16px; font-weight:700; cursor:pointer; margin-top:12px; text-decoration:none}
-  .btn-wa{background:#25d366; color:#fff}
-  .btn-maroon{background:var(--maroon); color:#fff}
-  .btn-ghost{background:#fff; color:var(--maroon); border:1.5px solid var(--maroon)}
-  .btn:disabled{opacity:.55}
-  .x{float:right; background:#f3ead6; border:none; width:34px; height:34px; border-radius:50%; font-size:17px; cursor:pointer}
-  /* staff */
-  .tabs{display:flex; gap:6px; margin:10px 0 14px}
-  .tabs button{flex:1; padding:10px 4px; border-radius:10px; border:1.5px solid var(--gold); background:#fff; font-weight:700; color:var(--maroon); cursor:pointer; font-size:13.5px}
-  .tabs button.on{background:var(--maroon); color:#fff; border-color:var(--maroon)}
-  label{display:block; font-size:13px; font-weight:600; margin:12px 0 5px; color:#57493a}
-  input,select,textarea{width:100%; padding:11px 12px; border:1.5px solid #d8c9a3; border-radius:10px; font-size:15px; font-family:inherit; background:#fff}
-  .row{display:flex; gap:8px}.row>*{flex:1}
-  .msg{margin-top:12px; font-size:14px; padding:10px 12px; border-radius:10px; display:none}
-  .msg.ok{display:block; background:#e6f4ec; color:var(--ok)}
-  .msg.err{display:block; background:#fdecea; color:var(--bad)}
-  .srow{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #eee2c8}
-  .srow img{width:46px; height:46px; border-radius:8px; object-fit:cover; background:#f3ead6; flex:none}
-  .srow .t{flex:1; min-width:0}
-  .srow .t b{display:block; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .srow .t span{font-size:12.5px; color:var(--muted)}
-  .toggle{flex:none; border:none; border-radius:999px; padding:8px 13px; font-weight:700; font-size:12.5px; cursor:pointer}
-  .toggle.in{background:#e6f4ec; color:var(--ok)}
-  .toggle.out{background:#fdecea; color:var(--bad)}
-  .itemrow{display:flex; gap:6px; margin-top:8px}
-  .itemrow input{padding:9px}
-  .itemrow .q{max-width:64px}.itemrow .p{max-width:96px}
-  .itemrow button{flex:none; width:40px; border:none; border-radius:10px; background:#fdecea; color:var(--bad); font-size:16px; cursor:pointer}
-  .totals{margin-top:14px; font-size:15px; line-height:1.7}
-  .totals b{float:right}
-  .totals .grand{font-size:18px; color:var(--maroon); border-top:1.5px solid var(--gold); padding-top:6px; margin-top:6px}
-  footer{text-align:center; color:var(--muted); font-size:12.5px; padding:0 16px 110px}
-  /* receipt print */
-  #receiptPrint{display:none}
-  @media print{
-    body>*{display:none !important}
-    #receiptPrint{display:block !important; font-family:ui-monospace,Menlo,monospace; color:#000; padding:10px}
-    #receiptPrint h2{text-align:center; margin:0}
-    #receiptPrint .c{text-align:center}
-    #receiptPrint hr{border:none; border-top:1px dashed #000}
-    #receiptPrint table{width:100%; border-collapse:collapse}
-    #receiptPrint td,#receiptPrint th{padding:3px 0; text-align:left}
-    #receiptPrint .r{text-align:right}
+  .sheet .x{position:absolute; top:12px; right:12px; z-index:3; background:rgba(253,251,247,.95); border:1px solid var(--line); width:38px; height:38px; border-radius:50%; font-size:17px; cursor:pointer; color:var(--brand)}
+  .dt-media{position:relative; aspect-ratio:1/1; background:#F3EAD6}
+  .dt-media img{width:100%; height:100%; object-fit:cover}
+  .dt-info{padding:18px 20px 0}
+  .dt-cat{font-size:11px; letter-spacing:2.4px; color:var(--gold); font-weight:700; text-transform:uppercase}
+  .dt-info h2{font-family:"Cormorant Garamond",Georgia,serif; margin:6px 0 4px; font-size:30px; font-weight:600; color:var(--brand); line-height:1.12}
+  .dt-price{font-size:21px; font-weight:800; color:var(--brand)}
+  .dt-desc{color:#57493A; font-size:14.5px; line-height:1.65; white-space:pre-wrap; margin:12px 0 0}
+  .dt-code{margin-top:14px; font-size:12px; color:var(--muted); letter-spacing:.6px}
+  .btn{display:block; width:100%; text-align:center; padding:15px; border-radius:999px; border:none; font-size:15.5px; font-weight:800; cursor:pointer; margin-top:14px; text-decoration:none}
+  .btn-wa{background:var(--wa); color:#fff}
+  .btn-share{background:#fff; color:var(--brand); border:1.5px solid var(--goldb)}
+  @media(min-width:1024px){
+    .overlay{align-items:center}
+    .sheet{width:min(920px,94vw); height:auto; max-height:92vh; border-radius:22px; padding:0; display:grid; grid-template-columns:1.02fr .98fr; overflow:hidden}
+    .sheet .x{top:14px; right:14px}
+    .dt-media{aspect-ratio:auto; height:100%; min-height:520px}
+    .dt-info{padding:38px 36px; overflow-y:auto}
+    .dt-info h2{font-size:38px}
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <div class="logo">A</div>
-    <div>
-      <h1>Anita Jewellery</h1>
-      <p>Gold-plated &amp; imitation jewellery</p>
+<!-- ================= DESKTOP SITE ================= -->
+<div class="site-d">
+  <div class="ann">HOME DELIVERY AVAILABLE &nbsp;·&nbsp; BOOK PERSONALLY ON WHATSAPP</div>
+  <header class="d-header">
+    <div class="d-wrap d-header-in">
+      <nav class="d-nav" id="dNav"></nav>
+      <div class="d-logo" id="dLogo">
+        <div class="nm serif">ANITA JEWELLERY</div>
+        <div class="sb">GOLD-PLATED &amp; IMITATION</div>
+      </div>
+      <div class="d-actions">
+        <label class="d-search"><span aria-hidden="true">⌕</span><input id="dSearch" type="search" placeholder="Search pieces…" aria-label="Search products"></label>
+        <a class="d-wa" id="dWa" target="_blank" rel="noopener">💬 WhatsApp Us</a>
+      </div>
     </div>
-  </div>
-  <div class="searchbar">
-    <input id="search" type="search" placeholder="Search necklaces, earrings, bangles…">
-  </div>
-</header>
+  </header>
 
-<div class="chips" id="chips"></div>
+  <section class="d-hero">
+    <div class="d-wrap" style="display:flex">
+      <div class="d-hero-t">
+        <div class="eyebrow">Gold-Plated · Handpicked Pieces</div>
+        <h1>Jewellery that finishes the outfit.</h1>
+        <p>Readymade gold-plated pieces for weddings, festivals and every day — each one booked personally with us on WhatsApp.</p>
+        <div class="d-hero-btns">
+          <button class="btn-solid" data-scroll="dCollection">Shop the collection</button>
+          <a class="btn-line" id="dHeroWa" target="_blank" rel="noopener">Book on WhatsApp</a>
+        </div>
+      </div>
+    </div>
+    <div class="d-hero-i" id="dHeroI"></div>
+  </section>
 
-<div class="toolbar">
-  <span class="cnt" id="countLbl"></span>
-  <select id="sortSel" aria-label="Sort products">
-    <option value="featured">Sort: Featured</option>
-    <option value="low">Price: Low to High</option>
-    <option value="high">Price: High to Low</option>
-  </select>
+  <div class="d-trust"><div class="d-wrap d-trust-in">
+    <div class="trust-it"><span class="st">✦</span><b>Premium gold plating</b>a shine that lasts</div>
+    <div class="trust-it"><span class="st">✦</span><b>Home delivery</b>charge confirmed before you pay</div>
+    <div class="trust-it"><span class="st">✦</span><b>Cash &amp; UPI</b>pay the easy way</div>
+    <div class="trust-it"><span class="st">✦</span><b>Personal booking</b>real people on WhatsApp</div>
+  </div></div>
+
+  <section class="d-wrap d-sec">
+    <h2 class="sec-title">Shop by Category</h2><div class="sec-rule"></div>
+    <div class="d-tiles" id="dTiles"></div>
+  </section>
+
+  <section class="d-wrap d-sec">
+    <h2 class="sec-title">New Pieces</h2><div class="sec-rule"></div>
+    <div class="d-new" id="dNew"></div>
+  </section>
+
+  <section class="d-wrap d-sec" id="dCollection">
+    <div class="d-coll-head">
+      <div><h2 class="sec-title">The Collection</h2><div class="sec-rule"></div></div>
+      <div class="d-tools">
+        <span class="d-count" id="dCount"></span>
+        <select class="d-sort" id="dSort" aria-label="Sort products">
+          <option value="featured">Sort: Featured</option>
+          <option value="low">Price: Low to High</option>
+          <option value="high">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="chips" id="dChips"></div>
+    <div class="d-grid" id="dGrid"></div>
+  </section>
+
+  <section class="d-story"><div class="d-wrap d-story-in">
+    <div>
+      <div class="eyebrow">Our Shop</div>
+      <h2>A small shop, picked piece by piece.</h2>
+      <p>Anita Jewellery is a readymade jewellery shop — gold-plated and imitation pieces chosen one by one, not mass-listed. What you see here is what we actually have; when a piece is gone, it's gone.</p>
+      <p>Book on WhatsApp and we confirm availability personally, arrange delivery, and take payment by cash or UPI.</p>
+    </div>
+    <div class="im" id="dStoryI"></div>
+  </div></section>
+
+  <footer class="d-foot"><div class="d-wrap">
+    <div class="d-foot-in">
+      <div>
+        <div class="bl serif">ANITA JEWELLERY</div>
+        <p>Gold-plated &amp; imitation jewellery, picked piece by piece. Every booking is taken personally on WhatsApp.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <div id="dFootCats"></div>
+      </div>
+      <div>
+        <h4>How Booking Works</h4>
+        <ol>
+          <li>Tap a piece and book on WhatsApp</li>
+          <li>We confirm availability personally</li>
+          <li>Pay by cash or UPI — home delivery arranged, charge confirmed before you pay</li>
+        </ol>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>WhatsApp: +91 80149 98953<br>Bookings on WhatsApp only<br>Home delivery available</p>
+      </div>
+    </div>
+    <div class="d-foot-b">
+      <span>© 2026 Anita Jewellery · Gold-plated &amp; imitation jewellery</span>
+      <span>Cash &amp; UPI accepted</span>
+    </div>
+  </div></footer>
 </div>
 
-<main>
-  <div id="status" class="loading">Loading the collection…</div>
-  <div class="grid" id="grid">
-    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
-    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
-    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
-    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
-    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
-    <div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>
-  </div>
-</main>
+<!-- ================= MOBILE SITE ================= -->
+<div class="site-m">
+  <div class="ann">HOME DELIVERY AVAILABLE · BOOK ON WHATSAPP</div>
+  <header class="m-header">
+    <div class="m-logo serif">ANITA JEWELLERY</div>
+    <div class="m-logo-sb">GOLD-PLATED &amp; IMITATION</div>
+    <label class="m-search"><span aria-hidden="true">⌕</span><input id="mSearch" type="search" placeholder="Search necklaces, earrings, bangles…" aria-label="Search products"></label>
+  </header>
 
-<footer>Bookings are taken personally on WhatsApp — tap any product, or the WhatsApp button, to book.<br>Home delivery is available — the delivery charge is confirmed on WhatsApp before you pay. Cash &amp; UPI accepted.</footer>
+  <div class="m-cats" id="mCats"></div>
+
+  <div class="m-hero" id="mHero">
+    <div class="m-hero-ov">
+      <div class="eyebrow">Gold-Plated · Handpicked</div>
+      <h1>Jewellery that finishes the outfit.</h1>
+      <button class="go" data-scroll="mCollection">Shop the collection</button>
+    </div>
+  </div>
+
+  <section class="m-sec">
+    <h2 class="sec-title">New Pieces</h2><div class="sec-rule"></div>
+  </section>
+  <div class="m-newrail" id="mNew"></div>
+
+  <section class="m-sec">
+    <h2 class="sec-title">Why Anita</h2><div class="sec-rule"></div>
+    <div class="m-trust">
+      <div class="trust-it"><span class="st">✦</span><b>Premium gold plating</b>a shine that lasts</div>
+      <div class="trust-it"><span class="st">✦</span><b>Home delivery</b>charge confirmed first</div>
+      <div class="trust-it"><span class="st">✦</span><b>Cash &amp; UPI</b>pay the easy way</div>
+      <div class="trust-it"><span class="st">✦</span><b>Personal booking</b>real people on WhatsApp</div>
+    </div>
+  </section>
+
+  <section id="mCollection">
+    <div class="m-sec">
+      <h2 class="sec-title">The Collection</h2><div class="sec-rule"></div>
+      <div class="m-coll-tools">
+        <span class="d-count" id="mCount"></span>
+        <select class="d-sort" id="mSort" aria-label="Sort products">
+          <option value="featured">Sort: Featured</option>
+          <option value="low">Price: Low to High</option>
+          <option value="high">Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="m-chips" id="mChips"></div>
+    <div class="m-grid" id="mGrid"></div>
+  </section>
+
+  <div class="m-story">
+    <div class="eyebrow">Our Shop</div>
+    <h2>A small shop, picked piece by piece.</h2>
+    <p>Readymade gold-plated and imitation pieces, chosen one by one. What you see is what we have — book on WhatsApp and we confirm personally, arrange delivery, and take cash or UPI.</p>
+  </div>
+
+  <footer class="m-foot">
+    <div class="bl serif">ANITA JEWELLERY</div>
+    <p>Bookings are taken personally on WhatsApp — tap any product, or the button below, to book.<br>Home delivery is available — the delivery charge is confirmed on WhatsApp before you pay. Cash &amp; UPI accepted.</p>
+    <div class="cats" id="mFootCats"></div>
+    <p style="color:#CBBFA5; font-size:12px">© 2026 Anita Jewellery</p>
+  </footer>
+
+  <a class="m-bar" id="mBar" target="_blank" rel="noopener">💬 Book on WhatsApp</a>
+</div>
 
 <a class="wa-float" id="waFloat" target="_blank" rel="noopener">💬 WhatsApp</a>
 
-<!-- Product detail -->
+<!-- Product detail (shared) -->
 <div class="overlay" id="detailOverlay">
   <div class="sheet" id="detailSheet"></div>
 </div>
-
-<!-- Staff -->
-<div class="overlay" id="staffOverlay">
-  <div class="sheet">
-    <button class="x" data-close="staffOverlay">✕</button>
-    <h2 style="margin-top:2px">Staff Desk</h2>
-
-    <div id="pinGate">
-      <p id="pinHint" style="color:#57493a;font-size:14.5px"></p>
-      <label>Staff PIN</label>
-      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="Enter PIN">
-      <button class="btn btn-maroon" id="pinBtn">Unlock</button>
-      <div class="msg" id="pinMsg"></div>
-    </div>
-
-    <div id="staffPanel" style="display:none">
-      <div class="tabs">
-        <button data-tab="add" class="on">Add Product</button>
-        <button data-tab="stock">Products</button>
-        <button data-tab="receipt">Receipt</button>
-      </div>
-
-      <!-- Add product -->
-      <section id="tab-add">
-        <label>Product name *</label>
-        <input id="pName" placeholder="e.g. Gold Plated Necklace Set">
-        <div class="row">
-          <div><label>Category *</label>
-            <select id="pCat">
-              <option>Necklace</option><option>Earrings</option><option>Bangles</option>
-              <option>Bracelet</option><option>Ring</option><option>Anklet</option>
-              <option>Mangalsutra</option><option>Set</option><option>Other</option>
-            </select></div>
-          <div><label>Price (₹)</label><input id="pPrice" type="number" min="0" inputmode="numeric" placeholder="1499"></div>
-        </div>
-        <label>Code (optional — auto if blank)</label>
-        <input id="pCode" placeholder="e.g. NCK-001">
-        <label>Description</label>
-        <textarea id="pDesc" rows="2" placeholder="Short description"></textarea>
-        <label>Photo</label>
-        <input id="pPhoto" type="file" accept="image/*">
-        <button class="btn btn-maroon" id="addBtn">Add Product</button>
-        <div class="msg" id="addMsg"></div>
-      </section>
-
-      <!-- Stock -->
-      <section id="tab-stock" style="display:none">
-        <p style="font-size:13.5px;color:#57493a;margin:4px 0 6px">Tap a product's badge to mark it <b>Out of stock</b> (hidden from the shop) or back <b>In stock</b>.</p>
-        <div id="stockList"></div>
-        <div class="msg" id="stockMsg"></div>
-      </section>
-
-      <!-- Receipt -->
-      <section id="tab-receipt" style="display:none">
-        <div class="row">
-          <div><label>Customer name</label><input id="rName" placeholder="Customer name"></div>
-          <div><label>Phone</label><input id="rPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile"></div>
-        </div>
-        <label>Items</label>
-        <div id="rItems"></div>
-        <button class="btn btn-ghost" id="rAddItem" style="margin-top:8px;padding:9px">+ Add item</button>
-        <div class="row">
-          <div><label>Discount (₹)</label><input id="rDisc" type="number" min="0" value="0" inputmode="numeric"></div>
-          <div><label>Payment</label>
-            <select id="rPay"><option>Cash</option><option>UPI</option><option>Card</option><option>Other</option></select></div>
-        </div>
-        <label>Notes</label>
-        <input id="rNotes" placeholder="Optional">
-        <div class="totals">
-          <div>Subtotal <b id="rSub">₹0</b></div>
-          <div>Discount <b id="rDiscShow">₹0</b></div>
-          <div class="grand">Total <b id="rTotal">₹0</b></div>
-        </div>
-        <button class="btn btn-maroon" id="rMake">Generate Receipt</button>
-        <div class="msg" id="rMsg"></div>
-        <div id="rActions" style="display:none">
-          <button class="btn btn-ghost" id="rPrint">🖨 Print / Save PDF</button>
-          <button class="btn btn-wa" id="rWa">Send receipt on WhatsApp</button>
-        </div>
-      </section>
-    </div>
-  </div>
-</div>
-
-<div id="receiptPrint"></div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzS9yPbsCrFIKJi5JgGVCUvTyexW9FbegkV7D3MHhDH8RZfukNlLykZqtS4XhtdIn_hsA/exec";
 const WA = "918014998953";
 const $ = id => document.getElementById(id);
-const inr = n => "₹" + Number(n||0).toLocaleString("en-IN");
-let products = [], activeCat = "All", lastReceipt = null;
+const inr = n => "₹" + Number(n || 0).toLocaleString("en-IN");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const GRADS = ["g1", "g2", "g3", "g4"];
 
-$("waFloat").href = "https://wa.me/" + WA + "?text=" + encodeURIComponent("Hello Anita Jewellery, I want to enquire about your jewellery.");
+let products = [], activeCat = "All", sortMode = "featured", query = "";
 
-/* ---------- showcase ---------- */
+const visible = () => products.filter(p => p.inStock !== false);
+const ts = p => { const t = Date.parse(p.createdAt || ""); return isNaN(t) ? 0 : t; };
+function cats(){
+  const s = ["All"];
+  visible().forEach(p => { if (p.category && !s.includes(p.category)) s.push(p.category); });
+  return s;
+}
+function filtered(){
+  const q = query.trim().toLowerCase();
+  const list = visible()
+    .filter(p => activeCat === "All" || p.category === activeCat)
+    .filter(p => !q || (p.name + " " + p.category + " " + (p.description || "")).toLowerCase().includes(q));
+  if (sortMode === "low") list.sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
+  if (sortMode === "high") list.sort((a, b) => (b.price || 0) - (a.price || 0));
+  return list;
+}
+const newest = n => [...visible()].sort((a, b) => ts(b) - ts(a)).slice(0, n);
+function catPhoto(cat){
+  const w = [...visible()].filter(p => p.category === cat).sort((a, b) => ts(b) - ts(a)).find(p => p.photoUrl);
+  return w ? w.photoUrl : "";
+}
+function gradFor(p){
+  let h = 0; const s = (p.category || "") + (p.name || "");
+  for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return GRADS[h % 4];
+}
+const initial = p => esc((p.name || "A").trim().charAt(0).toUpperCase() || "A");
+const media = p => p.photoUrl
+  ? `<img loading="lazy" src="${esc(p.photoUrl)}" alt="">`
+  : `<div class="ph ${gradFor(p)}">${initial(p)}</div>`;
+const badge = p => (p.left === 1 || p.left === 2) ? `<span class="leftbadge">Only ${p.left} left!</span>` : "";
+const card = p => `<article class="card" data-code="${esc(p.code)}">${badge(p)}<div class="im">${media(p)}</div><div class="tx"><span class="cat">${esc(p.category || "")}</span><h3>${esc(p.name)}</h3><div class="price">${p.price ? inr(p.price) : "Price on request"}</div><div class="book">Book on WhatsApp →</div></div></article>`;
+function wireCards(root){ root.querySelectorAll(".card").forEach(c => c.onclick = () => showDetail(c.dataset.code)); }
+
+function setCat(cat, scroll){
+  activeCat = cat;
+  renderCats(); renderGrids();
+  if (scroll){
+    const t = window.innerWidth >= 1024 ? $("dCollection") : $("mCollection");
+    if (t) t.scrollIntoView({ behavior: "smooth" });
+  }
+}
+function renderCats(){
+  const cs = cats();
+  $("dNav").innerHTML = cs.map(c => `<a data-cat="${esc(c)}" class="${c === activeCat ? "on" : ""}">${esc(c)}</a>`).join("");
+  $("dNav").querySelectorAll("a").forEach(a => a.onclick = () => setCat(a.dataset.cat, true));
+  $("dTiles").innerHTML = cs.filter(c => c !== "All").map(c => {
+    const ph = catPhoto(c);
+    const n = visible().filter(p => p.category === c).length;
+    return `<div class="d-tile" data-cat="${esc(c)}"><div class="im">${ph ? `<img loading="lazy" src="${esc(ph)}" alt="">` : `<div class="ph ${GRADS[c.length % 4]}">${esc(c.charAt(0))}</div>`}</div><span>${esc(c)}</span><small>${n} piece${n === 1 ? "" : "s"}</small></div>`;
+  }).join("");
+  $("dTiles").querySelectorAll(".d-tile").forEach(t => t.onclick = () => setCat(t.dataset.cat, true));
+  const chips = cs.map(c => `<button class="chip ${c === activeCat ? "on" : ""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  $("dChips").innerHTML = chips; $("mChips").innerHTML = chips;
+  document.querySelectorAll("#dChips .chip, #mChips .chip").forEach(b => b.onclick = () => setCat(b.dataset.cat, false));
+  $("mCats").innerHTML = cs.map(c => {
+    const ph = c === "All" ? "" : catPhoto(c);
+    return `<div class="m-cat ${c === activeCat ? "on" : ""}" data-cat="${esc(c)}"><div class="c">${ph ? `<img loading="lazy" src="${esc(ph)}" alt="">` : `<div class="ph ${GRADS[c.length % 4]}">${c === "All" ? "✦" : esc(c.charAt(0))}</div>`}</div><span>${esc(c)}</span></div>`;
+  }).join("");
+  $("mCats").querySelectorAll(".m-cat").forEach(t => t.onclick = () => setCat(t.dataset.cat, true));
+  $("dFootCats").innerHTML = cs.filter(c => c !== "All").map(c => `<a data-cat="${esc(c)}">${esc(c)}</a>`).join("");
+  $("dFootCats").querySelectorAll("a").forEach(a => a.onclick = () => setCat(a.dataset.cat, true));
+  $("mFootCats").textContent = cs.filter(c => c !== "All").join("  ·  ");
+}
+function renderNew(){
+  const d = newest(4), m = newest(6);
+  $("dNew").innerHTML = d.length ? d.map(card).join("") : `<div class="empty">New pieces are coming soon.</div>`;
+  $("mNew").innerHTML = m.length ? m.map(card).join("") : `<div class="empty">New pieces are coming soon.</div>`;
+  wireCards($("dNew")); wireCards($("mNew"));
+}
+function renderGrids(){
+  const list = filtered();
+  const cnt = products.length ? list.length + (list.length === 1 ? " piece" : " pieces") : "";
+  $("dCount").textContent = cnt; $("mCount").textContent = cnt;
+  const emptyHtml = products.length
+    ? `No pieces match that search.<br><button class="clearbtn" data-clear="1">Show everything</button>`
+    : `New collection coming soon. Please check back, or ask us on WhatsApp.`;
+  const html = list.length ? list.map(card).join("") : `<div class="empty">${emptyHtml}</div>`;
+  $("dGrid").innerHTML = html; $("mGrid").innerHTML = html;
+  wireCards($("dGrid")); wireCards($("mGrid"));
+  document.querySelectorAll("[data-clear]").forEach(b => b.onclick = () => {
+    query = ""; $("dSearch").value = ""; $("mSearch").value = ""; setCat("All", false);
+  });
+}
+function renderHero(){
+  const withPhoto = [...visible()].filter(p => p.photoUrl).sort((a, b) => ts(b) - ts(a));
+  const p = withPhoto[0];
+  $("dHeroI").innerHTML = p
+    ? `<img src="${esc(p.photoUrl)}" alt=""><div class="d-hero-cap" data-code="${esc(p.code)}">${esc(p.name)} · <b>${p.price ? inr(p.price) : ""}</b> — View piece →</div>`
+    : `<div class="ph g1">A</div>`;
+  $("mHero").querySelectorAll("img, .ph, .m-hero-cap").forEach(e => e.remove());
+  $("mHero").insertAdjacentHTML("afterbegin", p
+    ? `<img src="${esc(p.photoUrl)}" alt=""><div class="m-hero-cap" data-code="${esc(p.code)}">${esc(p.name)} · ${p.price ? inr(p.price) : ""}</div>`
+    : `<div class="ph g1">A</div>`);
+  document.querySelectorAll(".d-hero-cap, .m-hero-cap").forEach(el => el.onclick = () => showDetail(el.dataset.code));
+  const s = withPhoto[1] || withPhoto[0];
+  $("dStoryI").innerHTML = s ? `<img loading="lazy" src="${esc(s.photoUrl)}" alt="">` : `<div class="ph g3">A</div>`;
+}
+function renderAll(){ renderCats(); renderNew(); renderGrids(); renderHero(); }
+
 async function loadProducts(){
   /* Show the saved copy instantly, then refresh from the sheet in the background. */
   let hadCache = false;
-  try{
+  try {
     const c = JSON.parse(localStorage.getItem("aj_shop_products") || "null");
     if (c && Array.isArray(c.products) && c.products.length){
       products = c.products; hadCache = true;
-      renderChips(); renderGrid(); renderStock();
-      $("status").style.display = "none";
-      openDeepLink();
+      renderAll();
     }
-  }catch(e){}
-  try{
+  } catch(e){}
+  try {
     const r = await fetch(API + "?action=products");
     const d = await r.json();
     products = (d.products || []);
-    try{ localStorage.setItem("aj_shop_products", JSON.stringify({ ts: Date.now(), products })); }catch(e){}
-    renderChips(); renderGrid(); renderStock();
-    openDeepLink();
-    /* If a detail is already open (from the saved copy), repaint it with the
-       fresh data so it can't lag behind the grid. */
+    try { localStorage.setItem("aj_shop_products", JSON.stringify({ ts: Date.now(), products })); } catch(e){}
+    renderAll();
+    /* If a detail is already open (from the saved copy), repaint it fresh. */
     if (detailCode) showDetail(detailCode);
-    $("status").style.display = products.length ? "none" : "block";
-    if(!products.length) $("status").textContent = "New collection coming soon. Please check back, or ask us on WhatsApp.";
-  }catch(e){
+  } catch(e){
     if (!hadCache){
-      $("grid").innerHTML = "";
-      $("status").textContent = "Could not load the collection. Please check your connection and refresh.";
+      const msg = `<div class="empty">Could not load the collection. Please check your connection and refresh.</div>`;
+      $("dGrid").innerHTML = msg; $("mGrid").innerHTML = msg;
     }
   }
 }
-function cats(){
-  const s = ["All"]; products.forEach(p=>{ if(p.category && !s.includes(p.category)) s.push(p.category); });
-  return s;
-}
-function renderChips(){
-  $("chips").innerHTML = cats().map(c=>`<button class="chip ${c===activeCat?'on':''}" data-cat="${c}">${c}</button>`).join("");
-  document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{activeCat=b.dataset.cat; renderChips(); renderGrid();});
-}
-let sortMode = "featured";
-function renderGrid(){
-  const q = $("search").value.trim().toLowerCase();
-  const list = products.filter(p => p.inStock !== false)
-    .filter(p => activeCat==="All" || p.category===activeCat)
-    .filter(p => !q || (p.name+" "+p.category+" "+(p.description||"")).toLowerCase().includes(q));
-  if (sortMode === "low") list.sort((a,b) => (a.price||Infinity) - (b.price||Infinity));
-  if (sortMode === "high") list.sort((a,b) => (b.price||0) - (a.price||0));
-  $("countLbl").textContent = products.length ? list.length + (list.length === 1 ? " piece" : " pieces") : "";
-  $("grid").innerHTML = list.map(p=>`
-    <article class="card" data-code="${p.code}">
-      ${p.photoUrl ? `<img loading="lazy" src="${p.photoUrl}" alt="">` : `<div class="ph">✨</div>`}
-      ${(p.left===1 || p.left===2) ? `<span class="leftbadge">Only ${p.left} left!</span>` : ""}
-      <div class="info"><span class="cat">${p.category||""}</span><h3>${p.name}</h3>
-      <div class="price">${p.price ? inr(p.price) : "Price on request"}</div></div>
-    </article>`).join("");
-  document.querySelectorAll(".card").forEach(c=>c.onclick=()=>showDetail(c.dataset.code));
-  if(products.length) $("status").style.display = list.length ? "none" : "block";
-  if(!list.length && products.length){
-    $("status").innerHTML = 'No pieces match that search.<br><button class="clearbtn" id="clearSearch">Show everything</button>';
-    $("clearSearch").onclick = ()=>{ $("search").value=""; activeCat="All"; renderChips(); renderGrid(); };
-  }
-}
-$("search").addEventListener("input", renderGrid);
-$("sortSel").addEventListener("change", e=>{ sortMode = e.target.value; renderGrid(); });
 
+/* ---------- product detail ---------- */
 let detailCode = null;
 function showDetail(code){
-  const p = products.find(x=>String(x.code)===String(code)); if(!p) return;
+  const p = products.find(x => String(x.code) === String(code)); if (!p) return;
   detailCode = p.code;
   /* Every product has its own link (?p=CODE) so Share and bookmarks land on
      this exact piece, not just the shop's front page. */
@@ -327,14 +531,18 @@ function showDetail(code){
   const link = location.origin + "/?p=" + encodeURIComponent(p.code);
   const text = `Hello Anita Jewellery, I want to book this item:\n\n${p.name}${p.price ? " — " + inr(p.price) : ""}\nCode: ${p.code}\n\nPlease confirm availability.`;
   $("detailSheet").innerHTML = `
-    <button class="x" data-close="detailOverlay">✕</button>
-    ${p.photoUrl ? `<img class="big" src="${p.photoUrl}" alt="">` : `<div class="ph" style="border-radius:12px;aspect-ratio:1/1;background:linear-gradient(135deg,#f6ecd2,#ecd9a8);display:flex;align-items:center;justify-content:center;font-size:64px">✨</div>`}
-    <h2>${p.name}</h2>
-    <div class="price">${p.price ? inr(p.price) : "Price on request"}</div>
-    ${(p.left===1 || p.left===2) ? `<div><span class="leftline">Only ${p.left} left — book soon!</span></div>` : ""}
-    ${p.description ? `<p class="desc">${p.description}</p>` : ""}
-    <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>
-    <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + link)}">Share with a friend</a>`;
+    <button class="x" data-close="detailOverlay" aria-label="Close">✕</button>
+    <div class="dt-media">${media(p)}${badge(p)}</div>
+    <div class="dt-info">
+      <div class="dt-cat">${esc(p.category || "")}</div>
+      <h2>${esc(p.name)}</h2>
+      <div class="dt-price">${p.price ? inr(p.price) : "Price on request"}</div>
+      ${(p.left === 1 || p.left === 2) ? `<div><span class="leftline">Only ${p.left} left — book soon!</span></div>` : ""}
+      ${p.description ? `<p class="dt-desc">${esc(p.description)}</p>` : ""}
+      <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>
+      <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + link)}">Share with a friend</a>
+      <div class="dt-code">Product code: ${esc(p.code)}</div>
+    </div>`;
   openOverlay("detailOverlay");
 }
 
@@ -342,11 +550,11 @@ function showDetail(code){
 function openOverlay(id){ $(id).classList.add("open"); }
 function closeOverlay(id){
   $(id).classList.remove("open");
-  if(id === "detailOverlay"){ detailCode = null; history.replaceState(null, "", location.pathname); }
+  if (id === "detailOverlay"){ detailCode = null; history.replaceState(null, "", location.pathname); }
 }
-document.addEventListener("click", e=>{
-  const c = e.target.closest("[data-close]"); if(c) closeOverlay(c.dataset.close);
-  if(e.target.classList.contains("overlay")) closeOverlay(e.target.id);
+document.addEventListener("click", e => {
+  const c = e.target.closest("[data-close]"); if (c) closeOverlay(c.dataset.close);
+  if (e.target.classList.contains("overlay")) closeOverlay(e.target.id);
 });
 
 /* Arriving with a product link (?p=CODE) opens that piece straight away. */
@@ -359,141 +567,40 @@ function openDeepLink(){
   if (p){ deepOpened = true; showDetail(p.code); }
 }
 
-/* ---------- staff PIN (device-level) ---------- */
-async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
-$("pinBtn").onclick = async ()=>{
-  const v = $("pinInput").value.trim(); const saved = localStorage.getItem("aj_pin");
-  if(v.length < 4) return showMsg("pinMsg","Please use at least 4 characters.","err");
-  if(!saved){ localStorage.setItem("aj_pin", await sha(v)); unlock(); }
-  else if(await sha(v) === saved){ unlock(); }
-  else showMsg("pinMsg","Wrong PIN. Try again.","err");
-};
-function unlock(){ $("pinGate").style.display="none"; $("staffPanel").style.display="block"; $("pinInput").value=""; }
-function showMsg(id, text, kind){ const m=$(id); m.textContent=text; m.className="msg "+kind; }
-
-/* tabs */
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-  ["add","stock","receipt"].forEach(t=>$("tab-"+t).style.display = t===b.dataset.tab ? "block":"none");
+/* ---------- controls ---------- */
+function onSearch(src){
+  query = src.value;
+  const other = src === $("dSearch") ? $("mSearch") : $("dSearch");
+  if (other.value !== query) other.value = query;
+  renderGrids();
+}
+$("dSearch").addEventListener("input", e => onSearch(e.target));
+$("mSearch").addEventListener("input", e => onSearch(e.target));
+function onSort(src){
+  sortMode = src.value;
+  const other = src === $("dSort") ? $("mSort") : $("dSort");
+  if (other.value !== sortMode) other.value = sortMode;
+  renderGrids();
+}
+$("dSort").addEventListener("change", e => onSort(e.target));
+$("mSort").addEventListener("change", e => onSort(e.target));
+document.querySelectorAll("[data-scroll]").forEach(b => b.onclick = () => {
+  const t = $(b.dataset.scroll); if (t) t.scrollIntoView({ behavior: "smooth" });
 });
+$("dLogo").onclick = () => { setCat("All", false); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
-/* ---------- add product ---------- */
-function fileToB64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]); r.onerror=rej; r.readAsDataURL(file); }); }
-async function postJSON(obj){
-  const r = await fetch(API, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(obj) });
-  return r.json();
-}
-$("addBtn").onclick = async ()=>{
-  const name = $("pName").value.trim(); if(!name) return showMsg("addMsg","Product name is required.","err");
-  const btn = $("addBtn"); btn.disabled = true; btn.textContent = "Adding…";
-  try{
-    let photoBase64="", photoName="", photoMime="";
-    const f = $("pPhoto").files[0];
-    if(f){ photoBase64 = await fileToB64(f); photoName = f.name; photoMime = f.type; }
-    const code = $("pCode").value.trim() || ("AJ-" + Date.now().toString().slice(-6));
-    const d = await postJSON({ action:"addProduct", code, name, category:$("pCat").value,
-      price:Number($("pPrice").value||0), description:$("pDesc").value.trim(), inStock:true, photoBase64, photoName, photoMime });
-    if(!d.ok) throw new Error(d.error || "failed");
-    showMsg("addMsg", `Added ✓ ${name} (${code}) — it will appear in the shop in a few seconds.`, "ok");
-    ["pName","pCode","pPrice","pDesc"].forEach(i=>$(i).value=""); $("pPhoto").value="";
-    setTimeout(loadProducts, 2500);
-  }catch(e){ showMsg("addMsg","Could not add the product. Check connection and try again.","err"); }
-  btn.disabled = false; btn.textContent = "Add Product";
-};
+const enquiry = "https://wa.me/" + WA + "?text=" + encodeURIComponent("Hello Anita Jewellery, I want to enquire about your jewellery.");
+["dWa", "dHeroWa", "mBar", "waFloat"].forEach(id => { const el = $(id); if (el) el.href = enquiry; });
 
-/* ---------- stock toggle ---------- */
-function renderStock(){
-  $("stockList").innerHTML = products.map(p=>`
-    <div class="srow">
-      ${p.photoUrl ? `<img src="${p.photoUrl}" alt="">` : ""}
-      <div class="t"><b>${p.name}</b><span>${p.code} · ${p.category||""} · ${p.price?inr(p.price):""}</span></div>
-      <button class="toggle ${p.inStock===false?'out':'in'}" data-code="${p.code}">${p.inStock===false?"Out of stock":"In stock"}</button>
-    </div>`).join("") || "<p style='color:#8a7a63'>No products yet.</p>";
-  document.querySelectorAll(".toggle").forEach(b=>b.onclick=()=>toggleStock(b));
-}
-async function toggleStock(b){
-  const p = products.find(x=>String(x.code)===String(b.dataset.code)); if(!p) return;
-  const next = p.inStock === false ? true : false;
-  b.disabled = true; b.textContent = "Saving…";
-  try{
-    const d = await postJSON({ action:"setStock", code:p.code, inStock:next });
-    if(!d.ok) throw new Error(d.error || "failed");
-    p.inStock = next; renderStock(); renderGrid();
-    showMsg("stockMsg", `${p.name} is now ${next ? "In stock ✓" : "Out of stock — hidden from the shop."}`, "ok");
-  }catch(e){
-    b.disabled = false; b.textContent = p.inStock===false ? "Out of stock" : "In stock";
-    showMsg("stockMsg","Stock update needs the latest script version. If this keeps showing, tell sophi to finish the setStock update.","err");
-  }
-}
+/* Loading skeletons until the first render lands. */
+const skel = `<div class="skel"><div class="a"></div><div class="b"></div><div class="c"></div></div>`;
+$("dGrid").innerHTML = skel.repeat(4);
+$("mGrid").innerHTML = skel.repeat(2);
+$("dNew").innerHTML = skel.repeat(4);
+$("mNew").innerHTML = skel.repeat(2);
 
-/* ---------- receipt ---------- */
-function addItemRow(name="", qty=1, price=""){
-  const div = document.createElement("div"); div.className = "itemrow";
-  div.innerHTML = `<input class="n" placeholder="Item name" value="${name}">
-    <input class="q" type="number" min="1" value="${qty}" inputmode="numeric">
-    <input class="p" type="number" min="0" placeholder="₹" value="${price}" inputmode="numeric">
-    <button title="Remove">✕</button>`;
-  div.querySelector("button").onclick = ()=>{ div.remove(); calc(); };
-  div.querySelectorAll("input").forEach(i=>i.addEventListener("input", calc));
-  $("rItems").appendChild(div);
-}
-$("rAddItem").onclick = ()=>addItemRow();
-$("rDisc").addEventListener("input", calc);
-function receiptData(){
-  const items = [...document.querySelectorAll("#rItems .itemrow")].map(r=>({
-    name: r.querySelector(".n").value.trim(),
-    qty: Number(r.querySelector(".q").value||1),
-    price: Number(r.querySelector(".p").value||0)
-  })).filter(i=>i.name);
-  const subtotal = items.reduce((s,i)=>s + i.qty*i.price, 0);
-  const discount = Math.min(Number($("rDisc").value||0), subtotal);
-  return { items, subtotal, discount, total: subtotal - discount };
-}
-function calc(){
-  const d = receiptData();
-  $("rSub").textContent = inr(d.subtotal); $("rDiscShow").textContent = inr(d.discount); $("rTotal").textContent = inr(d.total);
-}
-addItemRow(); calc();
-
-$("rMake").onclick = async ()=>{
-  const d = receiptData();
-  if(!d.items.length) return showMsg("rMsg","Add at least one item first.","err");
-  const no = "AJ-" + new Date().toISOString().slice(0,10).replaceAll("-","") + "-" + String(Date.now()).slice(-4);
-  const date = new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
-  lastReceipt = { receiptNo:no, saleDate:date, date, customerName:$("rName").value.trim(), customerPhone:$("rPhone").value.trim(),
-    items: d.items.map(i=>`${i.name} x${i.qty} - ${inr(i.qty*i.price)}`).join("; "),
-    itemsList: d.items, subtotal:d.subtotal, discount:d.discount, total:d.total,
-    paymentMode:$("rPay").value, notes:$("rNotes").value.trim(), photo:"" };
-  $("receiptPrint").innerHTML = `
-    <h2>Anita Jewellery</h2><p class="c">Gold-plated &amp; imitation jewellery<br>WhatsApp: +91 8014998953</p><hr>
-    <p>Receipt: ${no}<br>Date: ${date}${lastReceipt.customerName?`<br>Customer: ${lastReceipt.customerName}`:""}${lastReceipt.customerPhone?` (${lastReceipt.customerPhone})`:""}</p><hr>
-    <table>${d.items.map(i=>`<tr><td>${i.name} × ${i.qty}</td><td class="r">${inr(i.qty*i.price)}</td></tr>`).join("")}
-    <tr><td>Subtotal</td><td class="r">${inr(d.subtotal)}</td></tr>
-    ${d.discount?`<tr><td>Discount</td><td class="r">− ${inr(d.discount)}</td></tr>`:""}
-    <tr><td><b>Total</b></td><td class="r"><b>${inr(d.total)}</b></td></tr></table><hr>
-    <p>Payment: ${lastReceipt.paymentMode}${lastReceipt.notes?`<br>Notes: ${lastReceipt.notes}`:""}</p>
-    <p class="c">Thank you for shopping with us!</p>`;
-  $("rActions").style.display = "block";
-  showMsg("rMsg", "Receipt " + no + " ready. Syncing to the shop sheet…", "ok");
-  try{
-    const r = await postJSON(lastReceipt);
-    showMsg("rMsg", r && r.ok ? `Receipt ${no} ready and synced to the sheet ✓` : `Receipt ${no} ready. Sheet sync did not confirm — it is saved on this screen; use Print / WhatsApp.`, r && r.ok ? "ok" : "err");
-  }catch(e){ showMsg("rMsg", `Receipt ${no} ready. Sheet sync failed (connection) — use Print / WhatsApp.`, "err"); }
-};
-$("rPrint").onclick = ()=>window.print();
-$("rWa").onclick = ()=>{
-  if(!lastReceipt) return;
-  const lines = [`*Anita Jewellery — Receipt ${lastReceipt.receiptNo}*`, `Date: ${lastReceipt.saleDate}`, ``,
-    ...lastReceipt.itemsList.map(i=>`${i.name} × ${i.qty} — ${inr(i.qty*i.price)}`),
-    `Subtotal: ${inr(lastReceipt.subtotal)}`, ...(lastReceipt.discount?[`Discount: −${inr(lastReceipt.discount)}`]:[]),
-    `*Total: ${inr(lastReceipt.total)}*`, `Payment: ${lastReceipt.paymentMode}`, ``, `Thank you for shopping with us!`];
-  const phone = lastReceipt.customerPhone.replace(/\D/g,"");
-  const target = phone.length >= 10 ? "91" + phone.slice(-10) : WA;
-  window.open("https://wa.me/" + target + "?text=" + encodeURIComponent(lines.join("\n")), "_blank");
-};
-
-loadProducts();
-if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+loadProducts().then(openDeepLink);
+if ("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(() => {}); }
 </script>
 </body>
 </html>
