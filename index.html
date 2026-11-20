@@ -271,6 +271,9 @@ async function loadProducts(){
     try{ localStorage.setItem("aj_shop_products", JSON.stringify({ ts: Date.now(), products })); }catch(e){}
     renderChips(); renderGrid(); renderStock();
     openDeepLink();
+    /* If a detail is already open (from the saved copy), repaint it with the
+       fresh data so it can't lag behind the grid. */
+    if (detailCode) showDetail(detailCode);
     $("status").style.display = products.length ? "none" : "block";
     if(!products.length) $("status").textContent = "New collection coming soon. Please check back, or ask us on WhatsApp.";
   }catch(e){
@@ -314,8 +317,10 @@ function renderGrid(){
 $("search").addEventListener("input", renderGrid);
 $("sortSel").addEventListener("change", e=>{ sortMode = e.target.value; renderGrid(); });
 
+let detailCode = null;
 function showDetail(code){
   const p = products.find(x=>String(x.code)===String(code)); if(!p) return;
+  detailCode = p.code;
   /* Every product has its own link (?p=CODE) so Share and bookmarks land on
      this exact piece, not just the shop's front page. */
   history.replaceState(null, "", "?p=" + encodeURIComponent(p.code));
@@ -337,7 +342,7 @@ function showDetail(code){
 function openOverlay(id){ $(id).classList.add("open"); }
 function closeOverlay(id){
   $(id).classList.remove("open");
-  if(id === "detailOverlay") history.replaceState(null, "", location.pathname);
+  if(id === "detailOverlay"){ detailCode = null; history.replaceState(null, "", location.pathname); }
 }
 document.addEventListener("click", e=>{
   const c = e.target.closest("[data-close]"); if(c) closeOverlay(c.dataset.close);
