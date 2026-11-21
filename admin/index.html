@@ -441,6 +441,11 @@ const CATS = ["Necklace","Earrings","Bangles","Bracelet","Ring","Anklet","Mangal
 const PAYS = ["Cash","UPI"];
 const $ = id => document.getElementById(id);
 const inr = n => "₹" + Number(n||0).toLocaleString("en-IN");
+/* Auto-format (Banikanta's rule, 2026-11-21): "kullu  necklace" -> "Kullu Necklace" —
+   first letter of every word capitalised, extra spaces tidied, the rest left as typed. */
+const fmtTitle = s => String(s || "").trim().replace(/\s+/g, " ").split(" ").map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
+/* Descriptions: first letter of the text only. */
+const fmtSentence = s => { const t = String(s || "").trim(); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; };
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 let products = [], selCat = "", selPay = "Cash", photoData = null, lastReceipt = null;
 
@@ -549,7 +554,7 @@ document.querySelectorAll("#catChips .chip").forEach(b => b.onclick = () => {
 /* ---------- upload: submit ---------- */
 function fieldErr(input, errId, bad){ $(input).classList.toggle("invalid", bad); $(errId).classList.toggle("show", bad); return !bad; }
 $("addBtn").onclick = async () => {
-  const name = $("pName").value.trim();
+  const name = fmtTitle($("pName").value);
   let ok = fieldErr("pName", "nameErr", !name);
   const catBad = !selCat; $("catErr").classList.toggle("show", catBad); ok = ok && !catBad;
   const priceRaw = $("pPrice").value.trim();
@@ -565,7 +570,7 @@ $("addBtn").onclick = async () => {
     const code = "AJ-" + Date.now().toString().slice(-6);
     const leftRaw = $("pLeft").value.trim();
     const d = await postJSON({ action: "addProduct", code, name, category: selCat,
-      price: priceRaw === "" ? 0 : Number(priceRaw), description: $("pDesc").value.trim(), inStock: true,
+      price: priceRaw === "" ? 0 : Number(priceRaw), description: fmtSentence($("pDesc").value), inStock: true,
       left: leftRaw === "" ? "" : Number(leftRaw),
       photoBase64: photoData ? photoData.base64 : "", photoName: photoData ? photoData.name : "", photoMime: photoData ? photoData.mime : "" });
     if (!d.ok) throw new Error(d.error || "failed");
@@ -634,14 +639,14 @@ function openEdit(code){
 $("editCancel").onclick = () => { $("editCard").style.display = "none"; editingCode = null; };
 $("editSave").onclick = async () => {
   const p = products.find(x => String(x.code) === String(editingCode)); if (!p) return;
-  const name = $("eName").value.trim();
+  const name = fmtTitle($("eName").value);
   if (!name){ const m = $("editMsg"); m.textContent = "Please enter the product name."; m.className = "msg errm"; return; }
   const btn = $("editSave");
   btn.disabled = true; btn.textContent = "Saving…";
   const priceRaw = $("ePrice").value.trim();
   const leftRaw = $("eLeft").value.trim();
   const upd = { name, category: $("eCat").value.trim(), price: priceRaw === "" ? 0 : Number(priceRaw),
-    description: $("eDesc").value.trim(), left: leftRaw === "" ? "" : Number(leftRaw) };
+    description: fmtSentence($("eDesc").value), left: leftRaw === "" ? "" : Number(leftRaw) };
   try{
     const d = await postJSON({ action: "updateProduct", code: p.code, ...upd });
     if (!d.ok) throw new Error(d.error || "failed");
@@ -806,9 +811,9 @@ $("receiptForm").addEventListener("click", () => setTimeout(draftSave, 0));
 draftRestore();
 
 function histNorm(x){
-  if (x && x.receiptNo){ x.voided = !!x.voided; return x; }
+  if (x && x.receiptNo){ x.voided = !!x.voided; if (typeof x.synced === "undefined") x.synced = true; return x; }
   return { receiptNo: x.no, saleDate: x.date, date: x.date, customerName: x.name, customerPhone: "", customerAddress: x.customerAddress || x.address || "",
-    items: "", itemsList: [], subtotal: x.total, discount: 0, delivery: 0, total: x.total, paymentMode: "", notes: "", photo: "", voided: false };
+    items: "", itemsList: [], subtotal: x.total, discount: 0, delivery: 0, total: x.total, paymentMode: "", notes: "", photo: "", voided: false, synced: true };
 }
 function loadHist(){
   let h = [];
@@ -837,7 +842,7 @@ function serverNorm(s){
   return { receiptNo: s.receiptNo, saleDate: s.saleDate, date: s.saleDate, customerName: s.customerName,
     customerPhone: s.customerPhone, customerAddress: s.customerAddress || "", items: s.items, itemsList: parseItemsText(s.items),
     subtotal: s.subtotal, discount: s.discount, delivery: 0, total: s.total, paymentMode: s.paymentMode, notes: s.notes, photo: s.photo || "",
-    voided: s.status === "VOID" };
+    voided: s.status === "VOID", synced: true };
 }
 async function syncHistFromServer(){
   try{
@@ -847,17 +852,27 @@ async function syncHistFromServer(){
     const local = loadHist();
     const localByNo = {}; local.forEach(x => localByNo[x.receiptNo] = x);
     const serverNos = new Set(j.receipts.map(s => s.receiptNo));
-    const unsynced = local.filter(x => !serverNos.has(x.receiptNo));
+    /* Phone-copy rule (Banikanta, 2026-11-21): a bill that was synced but is no
+       longer in the Sheet was deleted on purpose — drop this copy too, and never
+       re-send it. A bill that never reached the Sheet is kept: it may be the
+       only copy. This runs only after a fetch that succeeded. */
+    const unsynced = local.filter(x => !serverNos.has(x.receiptNo) && !x.synced);
     const merged = [...unsynced];
     j.receipts.forEach(s => {
       const l = localByNo[s.receiptNo];
-      if (l && l.itemsList && l.itemsList.length) merged.push({ ...l, voided: l.voided || s.status === "VOID" });
+      if (l && l.itemsList && l.itemsList.length) merged.push({ ...l, voided: l.voided || s.status === "VOID", synced: true });
       else merged.push(serverNorm(s));
     });
     storeHist(merged);
     renderHist();
-    /* Bills that never reached the sheet (made offline, or during a sync outage) are sent now. */
-    unsynced.filter(x => !x.voided && x.itemsList && x.itemsList.length).forEach(x => { postJSON(x).catch(() => {}); });
+    /* Bills that never reached the sheet (made offline, or during a sync outage) are sent now;
+       once one lands it counts as synced from then on. */
+    unsynced.filter(x => !x.voided && x.itemsList && x.itemsList.length).forEach(x => {
+      postJSON(x).then(() => {
+        const h = loadHist(); const t = h.find(y => y.receiptNo === x.receiptNo);
+        if (t && !t.synced){ t.synced = true; storeHist(h); }
+      }).catch(() => {});
+    });
   }catch(e){}
 }
 function renderHist(){
@@ -942,6 +957,7 @@ function showReceipt(r, isDup){
 
 $("rMake").onclick = async () => {
   const d = receiptData();
+  d.items.forEach(i => i.name = fmtTitle(i.name));
   const bad = !d.items.length;
   $("itemsErr").classList.toggle("show", bad);
   if (bad){ window.scrollTo({top: 0, behavior: "smooth"}); return; }
@@ -954,10 +970,10 @@ $("rMake").onclick = async () => {
   let no = "", tries = 0;
   do { no = "AJ-" + new Date().toISOString().slice(0, 10).replaceAll("-", "") + "-" + (1000 + Math.floor(Math.random() * 9000)); tries++; } while (known.has(no) && tries < 12);
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  lastReceipt = { receiptNo: no, saleDate: date, date, customerName: $("rName").value.trim(), customerPhone: $("rPhone").value.trim(), customerAddress: $("rAddr").value.trim(),
+  lastReceipt = { receiptNo: no, saleDate: date, date, customerName: fmtTitle($("rName").value), customerPhone: $("rPhone").value.trim(), customerAddress: $("rAddr").value.trim(),
     items: d.items.map(i => i.name + " x" + i.qty + " - " + inr(i.qty * i.price)).join("; "),
     itemsList: d.items, subtotal: d.subtotal, discount: d.discount, delivery: d.delivery, total: d.total,
-    paymentMode: selPay, notes: $("rNotes").value.trim(), photo: "" };
+    paymentMode: selPay, notes: $("rNotes").value.trim(), photo: "", synced: false };
 
   showReceipt(lastReceipt, false);
   saveHist(lastReceipt);
@@ -969,7 +985,10 @@ $("rMake").onclick = async () => {
   badge.className = "syncbadge"; badge.textContent = "Saving to shop sheet…";
   try{
     const r = await postJSON(lastReceipt);
-    if (r && r.ok){ badge.className = "syncbadge ok"; badge.textContent = "✓ Saved to shop sheet"; }
+    if (r && r.ok){ badge.className = "syncbadge ok"; badge.textContent = "✓ Saved to shop sheet";
+      /* From now on this bill follows the Sheet: deleted there, deleted here. */
+      const h = loadHist(); const t = h.find(x => x.receiptNo === lastReceipt.receiptNo);
+      if (t && !t.synced){ t.synced = true; storeHist(h); } }
     else { badge.className = "syncbadge bad"; badge.textContent = "Not saved to sheet — receipt is on this phone"; }
   }catch(e){ badge.className = "syncbadge bad"; badge.textContent = "Not saved to sheet — receipt is on this phone"; }
   btn.disabled = false;
