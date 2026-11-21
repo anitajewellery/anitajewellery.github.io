@@ -489,8 +489,11 @@ function go(scr){
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.scr));
 
 /* ---------- API ---------- */
+/* Staff key (script v10, 2026-11-21): sent with every write and with the bills
+   read. Without it the backend refuses — the sync link alone is not enough. */
+const ADMIN_KEY = "7ea98e01630f9e5caf71bc0b260d25b99c467a04dc877dec";
 async function postJSON(obj){
-  const r = await fetch(API, { method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(obj) });
+  const r = await fetch(API, { method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({ ...obj, key: ADMIN_KEY }) });
   return r.json();
 }
 function showFresh(ts){
@@ -846,7 +849,7 @@ function serverNorm(s){
 }
 async function syncHistFromServer(){
   try{
-    const res = await fetch(API + "?action=receipts");
+    const res = await fetch(API + "?action=receipts&key=" + ADMIN_KEY);
     const j = await res.json();
     if (!j || !j.ok || !Array.isArray(j.receipts)) return;
     const local = loadHist();
