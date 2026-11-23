@@ -229,6 +229,8 @@
     <p id="lockHint">Staff only — enter your PIN</p>
     <input id="pin1" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" aria-label="Staff PIN">
     <input id="pin2" type="password" inputmode="numeric" autocomplete="off" placeholder="Confirm PIN" aria-label="Confirm PIN" style="display:none">
+    <input id="siUser" type="text" autocomplete="username" placeholder="Username" aria-label="Username" style="display:none">
+    <input id="siPass" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password" style="display:none">
     <div class="err" id="pinErr"></div>
     <button class="btn btn-primary" id="pinGo">Unlock</button>
   </div>
@@ -490,30 +492,95 @@ let products = [], selCat = "", selPay = "Cash", photoData = null, lastReceipt =
 function netUI(){ const on = navigator.onLine; $("net").classList.toggle("off", !on); $("netTxt").textContent = on ? "Online" : "Offline"; }
 addEventListener("online", netUI); addEventListener("offline", netUI); netUI();
 
-/* ---------- PIN lock (same PIN as the shop Staff Desk — same device key) ---------- */
+/* ---------- Lock: shop sign-in once a password exists in the Sheet's
+   Settings tab (script v11, 2026-11-23); the device PIN until then. The
+   sign-in is remembered on this device; the lock button signs out. ------- */
 async function sha(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+let lockIsSignIn = false;
+function pinErrShow(msg){ $("pinErr").textContent = msg; $("pinErr").classList.add("show"); }
+function showSignIn(){
+  lockIsSignIn = true;
+  $("lockHint").textContent = "Staff only — sign in with the shop username and password";
+  $("pin1").style.display = "none"; $("pin2").style.display = "none";
+  $("siUser").style.display = "block"; $("siPass").style.display = "block";
+  $("pinGo").textContent = "Sign In";
+}
 function lockMode(){
+  lockIsSignIn = false;
   const set = !!localStorage.getItem("aj_pin");
   $("lockHint").textContent = set ? "Staff only — enter your PIN" : "First time here: choose a staff PIN (4+ digits)";
+  $("pin1").style.display = "block";
   $("pin2").style.display = set ? "none" : "block";
+  $("siUser").style.display = "none"; $("siPass").style.display = "none";
   $("pinGo").textContent = set ? "Unlock" : "Set PIN & Unlock";
 }
 $("pinGo").onclick = async () => {
-  const v = $("pin1").value.trim(), saved = localStorage.getItem("aj_pin");
   $("pinErr").classList.remove("show"); $("pinErr").textContent = "";
-  if (v.length < 4){ $("pinErr").textContent = "PIN must be at least 4 digits."; $("pinErr").classList.add("show"); return; }
+  if (lockIsSignIn){
+    const u = $("siUser").value.trim(), p = $("siPass").value;
+    if (!u || !p){ pinErrShow("Type the username and the password."); return; }
+    $("pinGo").textContent = "Signing in…";
+    try {
+      const res = await postJSON({ action: "signIn", username: u, password: p });
+      if (!res || !res.ok){
+        const e = res && res.error;
+        pinErrShow(e === "bad_credentials" ? "Wrong username or password. Try again."
+          : e === "locked" ? (res.message || "Too many wrong tries — wait 15 minutes.")
+          : e === "no_password_set" ? "No shop password is set yet. Add it in the Sheet's Settings tab first."
+          : "Sign-in failed. Try again.");
+        $("pinGo").textContent = "Sign In"; return;
+      }
+      localStorage.setItem("aj_auth_user", res.username || u);
+      localStorage.setItem("aj_auth_token", res.token);
+      localStorage.setItem("aj_pw_set", "1");
+      $("siPass").value = "";
+      $("pinGo").textContent = "Sign In";
+      $("lock").style.display = "none";
+      loadProducts();
+    } catch { pinErrShow("Could not reach the shop system. Check your connection and try again."); $("pinGo").textContent = "Sign In"; }
+    return;
+  }
+  const v = $("pin1").value.trim(), saved = localStorage.getItem("aj_pin");
+  if (v.length < 4){ pinErrShow("PIN must be at least 4 digits."); return; }
   if (!saved){
-    if (v !== $("pin2").value.trim()){ $("pinErr").textContent = "The two PINs do not match. Try again."; $("pinErr").classList.add("show"); return; }
+    if (v !== $("pin2").value.trim()){ pinErrShow("The two PINs do not match. Try again."); return; }
     localStorage.setItem("aj_pin", await sha(v));
   } else if (await sha(v) !== saved){
-    $("pinErr").textContent = "Wrong PIN. Try again."; $("pinErr").classList.add("show"); return;
+    pinErrShow("Wrong PIN. Try again."); return;
   }
   $("pin1").value = ""; $("pin2").value = "";
   $("lock").style.display = "none";
   loadProducts();
 };
-$("lockBtn").onclick = () => { lockMode(); $("lock").style.display = "flex"; };
+$("lockBtn").onclick = () => {
+  if (localStorage.getItem("aj_auth_token")){
+    /* Password mode: the lock button is a sign-out. */
+    localStorage.removeItem("aj_auth_token"); localStorage.removeItem("aj_auth_user");
+    showSignIn();
+  } else lockMode();
+  $("lock").style.display = "flex";
+};
 lockMode();
+/* Startup: if a shop password is set, a remembered sign-in is checked with
+   the backend (a password changed in the Sheet signs this device out);
+   without one, the sign-in form replaces the PIN. Offline, a remembered
+   sign-in on a password-protected shop is let in and sync catches up later. */
+(async () => {
+  try {
+    const st = await (await fetch(API + "?action=authStatus&key=" + ADMIN_KEY)).json();
+    if (st && st.ok && st.passwordSet){
+      localStorage.setItem("aj_pw_set", "1");
+      if (!localStorage.getItem("aj_auth_token")){ showSignIn(); return; }
+      const v = await postJSON({ action: "verify" });
+      if (v && v.ok && v.valid){ $("lock").style.display = "none"; loadProducts(); }
+      else if (v && v.ok){ localStorage.removeItem("aj_auth_token"); localStorage.removeItem("aj_auth_user"); showSignIn(); }
+      else showSignIn();
+    } else if (st && st.ok){ localStorage.removeItem("aj_pw_set"); }
+  } catch {
+    if (localStorage.getItem("aj_pw_set") && localStorage.getItem("aj_auth_token")){ $("lock").style.display = "none"; loadProducts(); }
+    else if (localStorage.getItem("aj_pw_set")) showSignIn();
+  }
+})();
 
 /* ---------- navigation ---------- */
 function go(scr){
@@ -527,11 +594,15 @@ function go(scr){
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.scr));
 
 /* ---------- API ---------- */
-/* Staff key (script v10, 2026-11-21): sent with every write and with the bills
-   read. Without it the backend refuses — the sync link alone is not enough. */
-const ADMIN_KEY = "7ea98e01630f9e5caf71bc0b260d25b99c467a04dc877dec";
+/* Staff key (script v11, 2026-11-23): sent with every write and with the
+   bills read; once a shop password exists, the remembered sign-in token
+   rides along too and the backend refuses key-only requests. */
+const ADMIN_KEY = "018123f523333ef2dc41458f338cb595b58c9105d4f29ad4";
 async function postJSON(obj){
-  const r = await fetch(API, { method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify({ ...obj, key: ADMIN_KEY }) });
+  const body = { ...obj, key: ADMIN_KEY };
+  const at = localStorage.getItem("aj_auth_token");
+  if (at && !body.authToken){ body.authUser = localStorage.getItem("aj_auth_user") || ""; body.authToken = at; }
+  const r = await fetch(API, { method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(body) });
   return r.json();
 }
 function showFresh(ts){
@@ -965,7 +1036,10 @@ function serverNorm(s){
 }
 async function syncHistFromServer(){
   try{
-    const res = await fetch(API + "?action=receipts&key=" + ADMIN_KEY);
+    let rcUrl = API + "?action=receipts&key=" + ADMIN_KEY;
+    const au = localStorage.getItem("aj_auth_user"), at = localStorage.getItem("aj_auth_token");
+    if (at) rcUrl += "&authUser=" + encodeURIComponent(au || "") + "&authToken=" + encodeURIComponent(at);
+    const res = await fetch(rcUrl);
     const j = await res.json();
     if (!j || !j.ok || !Array.isArray(j.receipts)) return;
     const local = loadHist();
