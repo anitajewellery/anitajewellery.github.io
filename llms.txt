@@ -1,0 +1,22 @@
+# Anita Jewellery
+
+> Anita Jewellery is a home-based jewellery shop at Athokpam Mayai Leikai, Thoubal, Manipur 795138, selling home to home since 2009. It sells readymade gold-plated and imitation jewellery - not real gold. Delivery is available across the valley areas of Manipur.
+
+## Shop
+
+- [Anita Jewellery - online shop](https://anitajewellery.github.io/): Browse the full collection of readymade gold-plated and imitation jewellery with photos and prices, and book on WhatsApp.
+
+## How to buy
+
+There is no online checkout. To buy a piece, open its page on the website and tap "Book on WhatsApp" - bookings are taken personally on WhatsApp at +91 8014998953. Payment is by cash or UPI.
+
+## Good to know
+
+- Home-based shop, selling home to home since 2009 - there is no shopfront and no fixed opening hours.
+- Delivery across the valley areas of Manipur.
+- Address: Anita Jewellery, Athokpam Mayai Leikai, Thoubal, Near Phura Keithel - 795138, Manipur, India.
+- WhatsApp for bookings: +91 8014998953.
+
+## Full catalogue
+
+- [Full catalogue and shop details (llms-full.txt)](https://anitajewellery.github.io/llms-full.txt)
