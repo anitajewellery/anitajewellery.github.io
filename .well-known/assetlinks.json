@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.anitajewellery.shop",
+      "sha256_cert_fingerprints": ["C4:52:FD:CF:35:8A:F4:39:E4:BA:AC:4B:BB:8C:94:97:E2:87:3A:1D:E5:7C:71:4B:89:A8:8D:B9:C4:0F:A6:77"]
+    }
+  }
+]
