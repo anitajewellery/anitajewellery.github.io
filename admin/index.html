@@ -62,6 +62,14 @@
 
   /* Photo picker */
   .photo{border:2px dashed #d8c69a; border-radius:var(--radius); background:#fffdf6; min-height:190px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:18px; text-align:center; cursor:pointer; width:100%}
+  .extrasBox{margin-top:14px}
+  .extrasHead{font-weight:700; font-size:14px; margin-bottom:6px}
+  .extrasHead span{color:var(--muted); font-weight:500; font-size:12.5px}
+  .ethumbs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px}
+  .ethumb{position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; background:#F3EAD6}
+  .ethumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .ethumb button{position:absolute; top:2px; right:2px; width:20px; height:20px; border:none; border-radius:999px; background:rgba(0,0,0,.55); color:#fff; font-size:12px; line-height:1; cursor:pointer}
+  .addx{border:1.5px dashed var(--gold); background:none; color:var(--brand); font-weight:700; border-radius:999px; padding:10px 16px; cursor:pointer; font-size:14px}
   .photo svg{width:42px; height:42px; color:var(--gold)}
   .photo b{font-size:16px}
   .photo span{font-size:13px; color:var(--muted)}
@@ -267,6 +275,12 @@
         </button>
         <input type="file" id="photoFile" accept="image/*" hidden>
         <div class="err" id="photoErr"></div>
+        <div class="extrasBox">
+          <div class="extrasHead">More photos <span>(optional, up to 3 — compressed automatically)</span></div>
+          <div class="ethumbs" id="extraThumbs"></div>
+          <button type="button" class="addx" id="extraBtn">+ Add extra photos</button>
+          <input type="file" id="extraFile" accept="image/*" multiple hidden>
+        </div>
 
         <label for="pName">Product name <span class="req">*</span></label>
         <input id="pName" placeholder="e.g. Gold Plated Necklace Set" autocomplete="off">
@@ -331,6 +345,12 @@
       <input id="eLeft" type="number" min="0" inputmode="numeric">
       <label for="eDesc">Description</label>
       <textarea id="eDesc" rows="2"></textarea>
+      <div class="extrasBox">
+        <div class="extrasHead">Extra photos <span>(main photo stays the cover — up to 3 extras)</span></div>
+        <div class="ethumbs" id="editExtraThumbs"></div>
+        <button type="button" class="addx" id="editExtraBtn">+ Add an extra photo</button>
+        <input type="file" id="editExtraFile" accept="image/*" hidden>
+      </div>
       <button class="btn btn-primary" id="editSave" style="margin-top:12px">Save changes</button>
       <button class="btn btn-ghost" id="editCancel" style="margin-top:10px">Cancel</button>
       <div class="msg" id="editMsg" role="status"></div>
@@ -488,6 +508,7 @@ const fmtTitle = s => String(s || "").trim().replace(/\s+/g, " ").split(" ").map
 const fmtSentence = s => { const t = String(s || "").trim(); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; };
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 let products = [], selCat = "", selPay = "Cash", photoData = null, lastReceipt = null;
+let extraPhotos = [], editKeepIds = [], editNewPhotos = [];
 
 /* ---------- connection badge ---------- */
 function netUI(){ const on = navigator.onLine; $("net").classList.toggle("off", !on); $("netTxt").textContent = on ? "Online" : "Offline"; }
@@ -656,6 +677,54 @@ $("photoFile").addEventListener("change", () => {
   img.src = URL.createObjectURL(f);
 });
 
+/* ---------- extra photos (upload + edit): same downscale as the main photo ---------- */
+function fileToSmallJpeg(f){
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 1200, sc = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      const url = c.toDataURL("image/jpeg", 0.85);
+      URL.revokeObjectURL(img.src);
+      res({ base64: url.split(",")[1], name: "photo-" + Date.now() + ".jpg", mime: "image/jpeg", preview: url });
+    };
+    img.onerror = () => res(null);
+    img.src = URL.createObjectURL(f);
+  });
+}
+function renderExtraThumbs(){
+  $("extraThumbs").innerHTML = extraPhotos.map((x, i) =>
+    '<div class="ethumb"><img src="' + x.preview + '" alt=""><button type="button" data-x="' + i + '" aria-label="Remove extra photo">✕</button></div>').join("");
+  document.querySelectorAll("#extraThumbs [data-x]").forEach(b => b.onclick = () => { extraPhotos.splice(Number(b.dataset.x), 1); renderExtraThumbs(); });
+  $("extraBtn").style.display = extraPhotos.length >= 3 ? "none" : "";
+}
+$("extraBtn").onclick = () => $("extraFile").click();
+$("extraFile").addEventListener("change", async () => {
+  const files = [...$("extraFile").files].slice(0, 3 - extraPhotos.length);
+  for (const f of files){ const d = await fileToSmallJpeg(f); if (d) extraPhotos.push(d); }
+  $("extraFile").value = "";
+  renderExtraThumbs();
+});
+function renderEditExtras(){
+  const p = products.find(x => String(x.code) === String(editingCode));
+  const kept = p ? (p.extraPhotoIds || []).map((id, i) => ({ id, url: (p.photos || [])[i + 1] })).filter(k => editKeepIds.includes(k.id)) : [];
+  $("editExtraThumbs").innerHTML =
+    kept.map(k => '<div class="ethumb"><img src="' + (k.url || "") + '" alt=""><button type="button" data-k="' + k.id + '" aria-label="Remove photo">✕</button></div>').join("") +
+    editNewPhotos.map((x, i) => '<div class="ethumb"><img src="' + x.preview + '" alt=""><button type="button" data-n="' + i + '" aria-label="Remove photo">✕</button></div>').join("");
+  document.querySelectorAll("#editExtraThumbs [data-k]").forEach(b => b.onclick = () => { editKeepIds = editKeepIds.filter(id => id !== b.dataset.k); renderEditExtras(); });
+  document.querySelectorAll("#editExtraThumbs [data-n]").forEach(b => b.onclick = () => { editNewPhotos.splice(Number(b.dataset.n), 1); renderEditExtras(); });
+  $("editExtraBtn").style.display = (editKeepIds.length + editNewPhotos.length) >= 3 ? "none" : "";
+}
+$("editExtraBtn").onclick = () => $("editExtraFile").click();
+$("editExtraFile").addEventListener("change", async () => {
+  const f = $("editExtraFile").files[0];
+  if (f && editKeepIds.length + editNewPhotos.length < 3){ const d = await fileToSmallJpeg(f); if (d) editNewPhotos.push(d); }
+  $("editExtraFile").value = "";
+  renderEditExtras();
+});
+
 /* ---------- upload: category chips ---------- */
 $("catChips").innerHTML = CATS.map(c => '<button type="button" class="chip" data-cat="' + c + '" aria-pressed="false">' + c + '</button>').join("");
 document.querySelectorAll("#catChips .chip").forEach(b => b.onclick = () => {
@@ -685,7 +754,8 @@ $("addBtn").onclick = async () => {
     const d = await postJSON({ action: "addProduct", code, name, category: selCat,
       price: priceRaw === "" ? 0 : Number(priceRaw), description: fmtSentence($("pDesc").value), inStock: true,
       left: leftRaw === "" ? "" : Number(leftRaw),
-      photoBase64: photoData ? photoData.base64 : "", photoName: photoData ? photoData.name : "", photoMime: photoData ? photoData.mime : "" });
+      photoBase64: photoData ? photoData.base64 : "", photoName: photoData ? photoData.name : "", photoMime: photoData ? photoData.mime : "",
+      extraPhotos: extraPhotos.map(x => ({ photoBase64: x.base64, photoName: x.name, photoMime: x.mime })) });
     if (!d.ok) throw new Error(d.error || "failed");
     if (navigator.vibrate) navigator.vibrate(12);
     $("doneTxt").textContent = name + " (" + selCat + (priceRaw ? ", " + inr(priceRaw) : "") + ") is now live on your shop.";
@@ -701,7 +771,7 @@ $("addBtn").onclick = async () => {
 };
 $("anotherBtn").onclick = () => {
   ["pName","pPrice","pDesc","pLeft"].forEach(i => $(i).value = "");
-  selCat = ""; photoData = null; $("photoFile").value = "";
+  selCat = ""; photoData = null; $("photoFile").value = ""; extraPhotos = []; renderExtraThumbs();
   document.querySelectorAll("#catChips .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
   const btn = $("photoBtn"); btn.classList.remove("has");
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Tap to take a photo</b><span>or choose from gallery</span>';
@@ -739,7 +809,8 @@ let editingCode = null;
 function openEdit(code){
   const p = products.find(x => String(x.code) === String(code)); if (!p) return;
   editingCode = p.code;
-  $("editMeta").textContent = "Code " + p.code + " · the photo stays the same.";
+  $("editMeta").textContent = "Code " + p.code + " · the main photo stays the cover.";
+  editKeepIds = [...(p.extraPhotoIds || [])]; editNewPhotos = []; renderEditExtras();
   $("eName").value = p.name || "";
   $("eCat").value = p.category || "";
   $("ePrice").value = p.price || "";
@@ -759,11 +830,14 @@ $("editSave").onclick = async () => {
   const priceRaw = $("ePrice").value.trim();
   const leftRaw = $("eLeft").value.trim();
   const upd = { name, category: $("eCat").value.trim(), price: priceRaw === "" ? 0 : Number(priceRaw),
-    description: fmtSentence($("eDesc").value), left: leftRaw === "" ? "" : Number(leftRaw) };
+    description: fmtSentence($("eDesc").value), left: leftRaw === "" ? "" : Number(leftRaw),
+    extraPhotos: editNewPhotos.map(x => ({ photoBase64: x.base64, photoName: x.name, photoMime: x.mime })),
+    removePhotoIds: (p.extraPhotoIds || []).filter(id => !editKeepIds.includes(id)) };
   try{
     const d = await postJSON({ action: "updateProduct", code: p.code, ...upd });
     if (!d.ok) throw new Error(d.error || "failed");
-    Object.assign(p, { name: upd.name, category: upd.category, price: upd.price, description: upd.description, left: upd.left === "" ? null : upd.left });
+    Object.assign(p, { name: upd.name, category: upd.category, price: upd.price, description: upd.description, left: upd.left === "" ? null : upd.left, extraPhotoIds: editKeepIds });
+    loadProducts();
     $("editCard").style.display = "none"; editingCode = null;
     renderProducts();
     const m = $("stockMsg"); m.textContent = upd.name + " updated ✓"; m.className = "msg ok";

@@ -225,6 +225,12 @@
   .sheet .x{position:absolute; top:12px; right:12px; z-index:3; background:rgba(253,251,247,.95); border:1px solid var(--line); width:38px; height:38px; border-radius:50%; font-size:17px; cursor:pointer; color:var(--brand)}
   .dt-media{position:relative; aspect-ratio:1/1; background:#F3EAD6}
   .dt-media img{width:100%; height:100%; object-fit:cover}
+  .dt-gal{position:relative; aspect-ratio:1/1; background:#F3EAD6}
+  .dt-gal>img{width:100%; height:100%; object-fit:cover}
+  .dt-thumbs{position:absolute; left:10px; bottom:10px; display:flex; gap:8px}
+  .dt-thumb{width:52px; height:52px; padding:0; border:2px solid rgba(255,255,255,.65); border-radius:10px; overflow:hidden; background:#fff; cursor:pointer}
+  .dt-thumb.on{border-color:var(--gold)}
+  .dt-thumb img{width:100%; height:100%; object-fit:cover; display:block}
   .dt-info{padding:18px 20px 0}
   .dt-cat{font-size:11px; letter-spacing:2.4px; color:var(--gold); font-weight:700; text-transform:uppercase}
   .dt-info h2{font-family:"Cormorant Garamond",Georgia,serif; margin:6px 0 4px; font-size:30px; font-weight:600; color:var(--brand); line-height:1.12}
@@ -602,7 +608,9 @@ function showDetail(code){
   const text = `Hello Anita Jewellery, I want to book this item:\n\n${p.name}${p.price ? " — " + inr(p.price) : ""}\nCode: ${p.code}\n\nPlease confirm availability.`;
   $("detailSheet").innerHTML = `
     <button class="x" data-close="detailOverlay" aria-label="Close">✕</button>
-    <div class="dt-media">${media(p)}${badge(p)}</div>
+    ${(p.photos && p.photos.length > 1)
+      ? `<div class="dt-gal"><img id="dtMain" src="${esc(p.photos[0])}" alt="">${badge(p)}<div class="dt-thumbs">${p.photos.map((u, i) => `<button type="button" class="dt-thumb${i === 0 ? " on" : ""}" data-dt="${i}" aria-label="Photo ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join("")}</div></div>`
+      : `<div class="dt-media">${media(p)}${badge(p)}</div>`}
     <div class="dt-info">
       <div class="dt-cat">${esc(p.category || "")}</div>
       <h2>${esc(p.name)}</h2>
@@ -614,6 +622,11 @@ function showDetail(code){
       <div class="dt-code">Product code: ${esc(p.code)}</div>
       <div class="dt-trust">✦ Home delivery available — the charge is confirmed on WhatsApp before you pay<br>✦ Cash &amp; UPI accepted</div>
     </div>`;
+  document.querySelectorAll("[data-dt]").forEach(b => b.onclick = () => {
+    const ix = Number(b.dataset.dt);
+    const main = $("dtMain"); if (main && p.photos && p.photos[ix]) main.src = p.photos[ix];
+    document.querySelectorAll("[data-dt]").forEach(x => x.classList.toggle("on", x === b));
+  });
   openOverlay("detailOverlay");
 }
 
