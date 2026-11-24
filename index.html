@@ -238,6 +238,14 @@
   .dt-desc{color:#57493A; font-size:14.5px; line-height:1.65; white-space:pre-wrap; margin:12px 0 0}
   .dt-code{margin-top:14px; font-size:12px; color:var(--muted); letter-spacing:.6px}
   .dt-trust{margin-top:18px; padding-top:14px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); line-height:1.6}
+  .dt-rel{margin-top:20px}
+  .dt-rel h3{font-family:var(--serif); font-size:19px; margin:0 0 10px; color:var(--ink)}
+  .dt-rel-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none}
+  .dt-rel-row::-webkit-scrollbar{display:none}
+  .dt-rel-it{flex:0 0 104px; cursor:pointer; text-align:left; background:none; border:none; padding:0; font:inherit}
+  .dt-rel-it img{width:104px; height:120px; object-fit:cover; border-radius:10px; border:1px solid var(--line); display:block}
+  .dt-rel-it .n{display:block; font-size:12px; font-weight:600; color:var(--ink); margin-top:5px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .dt-rel-it .pr{display:block; font-size:12px; font-weight:700; color:var(--gold); margin-top:2px}
   .btn{display:block; width:100%; text-align:center; padding:15px; border-radius:999px; border:none; font-size:15.5px; font-weight:800; cursor:pointer; margin-top:14px; text-decoration:none}
   .btn-wa{background:var(--wa); color:#fff}
   .btn-share{background:#fff; color:var(--brand); border:1.5px solid var(--goldb)}
@@ -623,8 +631,10 @@ function showDetail(code){
       <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>
       <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + link)}">Share with a friend</a>
       <div class="dt-code">Product code: ${esc(p.code)}</div>
+      ${(() => { const rel = products.filter(x => x.code !== p.code && x.category === p.category).slice(0, 6); const relList = rel.length >= 2 ? rel : products.filter(x => x.code !== p.code).slice(0, 6); return relList.length ? `<div class="dt-rel"><h3>${rel.length >= 2 ? "More in " + esc(p.category || "") : "More pieces to see"}</h3><div class="dt-rel-row">${relList.map(r => `<button type="button" class="dt-rel-it" data-rel="${esc(r.code)}"><img loading="lazy" src="${esc((r.photoUrl || "").replace("sz=w1200", "sz=w200"))}" alt=""><span class="n">${esc(r.name)}</span><span class="pr">${r.price ? inr(r.price) : "Price on request"}</span></button>`).join("")}</div></div>` : ""; })()}
       <div class="dt-trust">✦ Home delivery available — the charge is confirmed on WhatsApp before you pay<br>✦ Cash &amp; UPI accepted</div>
     </div>`;
+  document.querySelectorAll("[data-rel]").forEach(b => b.onclick = () => showDetail(b.dataset.rel));
   document.querySelectorAll("[data-dt]").forEach(b => b.onclick = () => {
     const ix = Number(b.dataset.dt);
     const main = $("dtMain"); if (main && p.photos && p.photos[ix]) main.src = p.photos[ix];
