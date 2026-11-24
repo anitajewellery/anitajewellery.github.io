@@ -615,6 +615,11 @@ function showDetail(code){
   /* Every product has its own link (?p=CODE) so Share and bookmarks land on
      this exact piece, not just the shop's front page. */
   history.replaceState(null, "", "?p=" + encodeURIComponent(p.code));
+  /* Browser back should close this sheet, not leave the shop (same rule
+     Banikanta asked for in the app): the first open from a card pushes a
+     history entry; related-piece hops and the shared-link landing replace. */
+  const dtOpen = $("detailOverlay").classList.contains("open");
+  if (!dtOpen && !deepOpened) history.pushState({ ajDetail: p.code }, "", "?p=" + encodeURIComponent(p.code));
   const link = location.origin + "/?p=" + encodeURIComponent(p.code);
   const text = `Hello Anita Jewellery, I want to book this item:\n\n${p.name}${p.price ? " — " + inr(p.price) : ""}\nCode: ${p.code}\n\nPlease confirm availability.`;
   $("detailSheet").innerHTML = `
@@ -646,9 +651,17 @@ function showDetail(code){
 /* ---------- overlays ---------- */
 function openOverlay(id){ $(id).classList.add("open"); }
 function closeOverlay(id){
+  if (id === "detailOverlay" && history.state && history.state.ajDetail){
+    history.back(); /* the popstate handler below does the visual close */
+    return;
+  }
   $(id).classList.remove("open");
   if (id === "detailOverlay"){ detailCode = null; history.replaceState(null, "", location.pathname); }
 }
+window.addEventListener("popstate", () => {
+  const o = $("detailOverlay");
+  if (o && o.classList.contains("open")){ o.classList.remove("open"); detailCode = null; }
+});
 document.addEventListener("click", e => {
   const c = e.target.closest("[data-close]"); if (c) closeOverlay(c.dataset.close);
   if (e.target.classList.contains("overlay")) closeOverlay(e.target.id);
