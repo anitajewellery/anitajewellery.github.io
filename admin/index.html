@@ -666,8 +666,9 @@ $("photoFile").addEventListener("change", () => {
     const c = document.createElement("canvas");
     c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
     c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-    const url = c.toDataURL("image/jpeg", 0.85);
-    photoData = { base64: url.split(",")[1], name: "photo-" + Date.now() + ".jpg", mime: "image/jpeg", preview: url };
+    let url = c.toDataURL("image/webp", 0.85), mime = "image/webp", ext = "webp";
+    if (url.indexOf("data:image/webp") !== 0){ url = c.toDataURL("image/jpeg", 0.85); mime = "image/jpeg"; ext = "jpg"; }
+    photoData = { base64: url.split(",")[1], name: "photo-" + Date.now() + "." + ext, mime: mime, preview: url };
     const btn = $("photoBtn");
     btn.classList.add("has");
     btn.innerHTML = '<img src="' + url + '" alt="Product photo preview"><span class="retake">Retake</span>';
@@ -686,9 +687,10 @@ function fileToSmallJpeg(f){
       const c = document.createElement("canvas");
       c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
       c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-      const url = c.toDataURL("image/jpeg", 0.85);
+      let url = c.toDataURL("image/webp", 0.85), mime = "image/webp", ext = "webp";
+      if (url.indexOf("data:image/webp") !== 0){ url = c.toDataURL("image/jpeg", 0.85); mime = "image/jpeg"; ext = "jpg"; }
       URL.revokeObjectURL(img.src);
-      res({ base64: url.split(",")[1], name: "photo-" + Date.now() + ".jpg", mime: "image/jpeg", preview: url });
+      res({ base64: url.split(",")[1], name: "photo-" + Date.now() + "." + ext, mime: mime, preview: url });
     };
     img.onerror = () => res(null);
     img.src = URL.createObjectURL(f);

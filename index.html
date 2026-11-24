@@ -499,8 +499,11 @@ const initial = p => esc((p.name || "A").trim().charAt(0).toUpperCase() || "A");
 const media = p => p.photoUrl
   ? `<img loading="lazy" src="${esc(p.photoUrl)}" alt="">`
   : `<div class="ph ${gradFor(p)}">${initial(p)}</div>`;
+const cardMedia = p => p.photoUrl
+  ? `<img loading="lazy" src="${esc(p.photoUrl.replace("sz=w1200", "sz=w700"))}" alt="">`
+  : `<div class="ph ${gradFor(p)}">${initial(p)}</div>`;
 const badge = p => (p.left === 1 || p.left === 2) ? `<span class="leftbadge">Only ${p.left} left!</span>` : "";
-const card = p => `<article class="card" data-code="${esc(p.code)}">${badge(p)}<div class="im">${media(p)}</div><div class="tx"><span class="cat">${esc(p.category || "")}</span><h3>${esc(p.name)}</h3><div class="price">${p.price ? inr(p.price) : "Price on request"}</div><div class="book">Book on WhatsApp →</div></div></article>`;
+const card = p => `<article class="card" data-code="${esc(p.code)}">${badge(p)}<div class="im">${cardMedia(p)}</div><div class="tx"><span class="cat">${esc(p.category || "")}</span><h3>${esc(p.name)}</h3><div class="price">${p.price ? inr(p.price) : "Price on request"}</div><div class="book">Book on WhatsApp →</div></div></article>`;
 function wireCards(root){ root.querySelectorAll(".card").forEach(c => c.onclick = () => showDetail(c.dataset.code)); }
 
 function setCat(cat, scroll){
@@ -609,7 +612,7 @@ function showDetail(code){
   $("detailSheet").innerHTML = `
     <button class="x" data-close="detailOverlay" aria-label="Close">✕</button>
     ${(p.photos && p.photos.length > 1)
-      ? `<div class="dt-gal"><img id="dtMain" src="${esc(p.photos[0])}" alt="">${badge(p)}<div class="dt-thumbs">${p.photos.map((u, i) => `<button type="button" class="dt-thumb${i === 0 ? " on" : ""}" data-dt="${i}" aria-label="Photo ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join("")}</div></div>`
+      ? `<div class="dt-gal"><img id="dtMain" src="${esc(p.photos[0])}" alt="">${badge(p)}<div class="dt-thumbs">${p.photos.map((u, i) => `<button type="button" class="dt-thumb${i === 0 ? " on" : ""}" data-dt="${i}" aria-label="Photo ${i + 1}"><img src="${esc(u.replace("sz=w1200", "sz=w200"))}" alt=""></button>`).join("")}</div></div>`
       : `<div class="dt-media">${media(p)}${badge(p)}</div>`}
     <div class="dt-info">
       <div class="dt-cat">${esc(p.category || "")}</div>
