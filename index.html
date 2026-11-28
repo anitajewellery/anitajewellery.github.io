@@ -621,7 +621,7 @@ function showDetail(code){
   const dtOpen = $("detailOverlay").classList.contains("open");
   if (!dtOpen && !deepOpened) history.pushState({ ajDetail: p.code }, "", "?p=" + encodeURIComponent(p.code));
   const link = location.origin + "/?p=" + encodeURIComponent(p.code);
-  const text = `Hello Anita Jewellery, I want to book this item:\n\n${p.name}${p.price ? " — " + inr(p.price) : ""}\nCode: ${p.code}\n\nPlease confirm availability.`;
+  const text = `Hello Anita Jewellery, I want to ${p.price ? "book" : "enquire about"} this item:\n\n${p.name}${p.price ? " — " + inr(p.price) : ""}\nCode: ${p.code}\n\n${p.price ? "Please confirm availability." : "Please share the price."}`;
   $("detailSheet").innerHTML = `
     <button class="x" data-close="detailOverlay" aria-label="Close">✕</button>
     ${(p.photos && p.photos.length > 1)
@@ -633,7 +633,7 @@ function showDetail(code){
       <div class="dt-price">${p.price ? inr(p.price) : "Price on request"}</div>
       ${(p.left === 1 || p.left === 2) ? `<div><span class="leftline">Only ${p.left} left — book soon!</span></div>` : ""}
       ${p.description ? `<p class="dt-desc">${esc(p.description)}</p>` : ""}
-      <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">Book on WhatsApp</a>
+      <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(text)}">${p.price ? "Book on WhatsApp" : "Enquire on WhatsApp"}</a>
       <a class="btn btn-share" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Look at this from Anita Jewellery: " + p.name + (p.price ? " — " + inr(p.price) : "") + "\n" + link)}">Share with a friend</a>
       <div class="dt-code">Product code: ${esc(p.code)}</div>
       ${(() => { const rel = products.filter(x => x.code !== p.code && x.category === p.category).slice(0, 6); const relList = rel.length >= 2 ? rel : products.filter(x => x.code !== p.code).slice(0, 6); return relList.length ? `<div class="dt-rel"><h3>${rel.length >= 2 ? "More in " + esc(p.category || "") : "More pieces to see"}</h3><div class="dt-rel-row">${relList.map(r => `<button type="button" class="dt-rel-it" data-rel="${esc(r.code)}"><img loading="lazy" src="${esc((r.photoUrl || "").replace("sz=w1200", "sz=w200"))}" alt=""><span class="n">${esc(r.name)}</span><span class="pr">${r.price ? inr(r.price) : "Price on request"}</span></button>`).join("")}</div></div>` : ""; })()}
