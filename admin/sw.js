@@ -1,4 +1,4 @@
-const CACHE = "anita-admin-v16
+const CACHE = "anita-admin-v17
 const IMG_CACHE = "anita-admin-images-v1";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", e => {
