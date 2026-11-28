@@ -120,7 +120,11 @@
   .prow .noph svg{width:26px; height:26px}
   .prow .t{flex:1; min-width:0}
   .prow .t b{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; font-size:15px; overflow:hidden}
-  .prow .leftlbl{color:var(--gold); font-weight:700}
+    .prow .leftlbl{color:var(--gold); font-weight:700}
+  .prow .limlbl{color:var(--gold); font-weight:700}
+  .limrow{display:flex; align-items:center; gap:10px; margin:14px 0 2px; font-size:14.5px; font-weight:600; cursor:pointer}
+  .limrow input{width:20px; height:20px; accent-color:#C9A227; flex:none}
+  .limrow small{display:block; font-weight:500; color:var(--muted); font-size:12px}
   .editbtn{flex:none; border:1.5px solid var(--border); background:#fff; color:var(--brand); font-weight:700; font-size:13px; border-radius:999px; padding:9px 12px; cursor:pointer; min-height:48px}
   .todayband{display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:12px 16px; margin-bottom:14px}
   .custmatch{background:#F7EBD2; border:1px solid #E5DCC8; border-radius:var(--radius); padding:10px 14px; margin-top:10px; cursor:pointer}
@@ -302,6 +306,8 @@
         <label for="pDesc">Description <span style="color:var(--muted); font-weight:500">(optional)</span></label>
         <textarea id="pDesc" rows="2" placeholder="Short description, e.g. Gold-plated, skin-friendly finish"></textarea>
 
+                <label class="limrow"><input type="checkbox" id="pLimited"><span>Limited item<small>Shows a gold LIMITED badge on the shop, so the piece stands out.</small></span></label>
+
         <div class="help" id="codeHelp">Product code will be created automatically.</div>
       </div>
       <div class="sticky-cta">
@@ -342,8 +348,9 @@
       <label for="ePrice">Price (₹)</label>
       <input id="ePrice" type="number" min="0" inputmode="numeric">
       <div class="help">Leave blank to hide the price — the shop shows “Price on request”.</div>
-      <label for="eLeft">Pieces left <span style="color:var(--muted); font-weight:500">(optional — blank = no badge)</span></label>
+            <label for="eLeft">Pieces left <span style="color:var(--muted); font-weight:500">(optional — blank = no badge)</span></label>
       <input id="eLeft" type="number" min="0" inputmode="numeric">
+      <label class="limrow"><input type="checkbox" id="eLimited"><span>Limited item<small>Shows a gold LIMITED badge on the shop, so the piece stands out.</small></span></label>
       <label for="eDesc">Description</label>
       <textarea id="eDesc" rows="2"></textarea>
       <div class="extrasBox">
@@ -756,7 +763,7 @@ $("addBtn").onclick = async () => {
     const leftRaw = $("pLeft").value.trim();
     const d = await postJSON({ action: "addProduct", code, name, category: selCat,
       price: priceRaw === "" ? 0 : Number(priceRaw), description: fmtSentence($("pDesc").value), inStock: true,
-      left: leftRaw === "" ? "" : Number(leftRaw),
+      left: leftRaw === "" ? "" : Number(leftRaw), limited: $("pLimited").checked,
       photoBase64: photoData ? photoData.base64 : "", photoName: photoData ? photoData.name : "", photoMime: photoData ? photoData.mime : "",
       extraPhotos: extraPhotos.map(x => ({ photoBase64: x.base64, photoName: x.name, photoMime: x.mime })) });
     if (!d.ok) throw new Error(d.error || "failed");
@@ -773,7 +780,7 @@ $("addBtn").onclick = async () => {
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg><span>Add Product</span>';
 };
 $("anotherBtn").onclick = () => {
-  ["pName","pPrice","pDesc","pLeft"].forEach(i => $(i).value = "");
+  ["pName","pPrice","pDesc","pLeft"].forEach(i => $(i).value = ""); $("pLimited").checked = false;
   selCat = ""; photoData = null; $("photoFile").value = ""; extraPhotos = []; renderExtraThumbs();
   document.querySelectorAll("#catChips .chip").forEach(x => x.setAttribute("aria-pressed", "false"));
   const btn = $("photoBtn"); btn.classList.remove("has");
@@ -798,7 +805,8 @@ function renderProducts(){
     '<div class="prow">' +
       (p.photoUrl ? '<img loading="lazy" src="' + p.photoUrl + '" alt="">' : '<div class="noph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12"/></svg></div>') +
       '<div class="t"><b>' + esc(p.name) + '</b><span>' + esc(p.category || "") + (p.price ? " · " + inr(p.price) : " · Price hidden") + '</span>' +
-      (p.left === 1 || p.left === 2 ? '<span class="leftlbl"> · Only ' + p.left + ' left!</span>' : '') +
+            (p.left === 1 || p.left === 2 ? '<span class="leftlbl"> · Only ' + p.left + ' left!</span>' : '') +
+      (p.limited ? '<span class="limlbl"> · Limited</span>' : '') +
       (p.inStock === false ? '<span class="outlbl"> · Out of stock</span>' : '') + '</div>' +
       '<button class="editbtn" data-code="' + p.code + '">Edit</button>' +
       '<button class="switch" role="switch" aria-checked="' + (p.inStock !== false) + '" aria-label="In stock: ' + esc(p.name) + '" data-code="' + p.code + '"><span class="tr"></span><span class="th"></span></button>' +
@@ -817,7 +825,8 @@ function openEdit(code){
   $("eName").value = p.name || "";
   $("eCat").value = p.category || "";
   $("ePrice").value = p.price || "";
-  $("eLeft").value = (p.left === null || typeof p.left === "undefined") ? "" : p.left;
+    $("eLeft").value = (p.left === null || typeof p.left === "undefined") ? "" : p.left;
+  $("eLimited").checked = !!p.limited;
   $("eDesc").value = p.description || "";
   $("editMsg").className = "msg"; $("editMsg").textContent = "";
   $("editCard").style.display = "block";
@@ -833,13 +842,13 @@ $("editSave").onclick = async () => {
   const priceRaw = $("ePrice").value.trim();
   const leftRaw = $("eLeft").value.trim();
   const upd = { name, category: $("eCat").value.trim(), price: priceRaw === "" ? 0 : Number(priceRaw),
-    description: fmtSentence($("eDesc").value), left: leftRaw === "" ? "" : Number(leftRaw),
+        description: fmtSentence($("eDesc").value), left: leftRaw === "" ? "" : Number(leftRaw), limited: $("eLimited").checked,
     extraPhotos: editNewPhotos.map(x => ({ photoBase64: x.base64, photoName: x.name, photoMime: x.mime })),
     removePhotoIds: (p.extraPhotoIds || []).filter(id => !editKeepIds.includes(id)) };
   try{
     const d = await postJSON({ action: "updateProduct", code: p.code, ...upd });
     if (!d.ok) throw new Error(d.error || "failed");
-    Object.assign(p, { name: upd.name, category: upd.category, price: upd.price, description: upd.description, left: upd.left === "" ? null : upd.left, extraPhotoIds: editKeepIds });
+    Object.assign(p, { name: upd.name, category: upd.category, price: upd.price, description: upd.description, left: upd.left === "" ? null : upd.left, limited: upd.limited, extraPhotoIds: editKeepIds });
     loadProducts();
     $("editCard").style.display = "none"; editingCode = null;
     renderProducts();
