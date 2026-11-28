@@ -341,6 +341,7 @@
       <input id="eCat" autocomplete="off">
       <label for="ePrice">Price (₹)</label>
       <input id="ePrice" type="number" min="0" inputmode="numeric">
+      <div class="help">Leave blank to hide the price — the shop shows “Price on request”.</div>
       <label for="eLeft">Pieces left <span style="color:var(--muted); font-weight:500">(optional — blank = no badge)</span></label>
       <input id="eLeft" type="number" min="0" inputmode="numeric">
       <label for="eDesc">Description</label>
@@ -796,7 +797,7 @@ function renderProducts(){
   $("pList").innerHTML = list.length ? '<div class="plist">' + list.map(p =>
     '<div class="prow">' +
       (p.photoUrl ? '<img loading="lazy" src="' + p.photoUrl + '" alt="">' : '<div class="noph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12"/></svg></div>') +
-      '<div class="t"><b>' + esc(p.name) + '</b><span>' + esc(p.category || "") + (p.price ? " · " + inr(p.price) : "") + '</span>' +
+      '<div class="t"><b>' + esc(p.name) + '</b><span>' + esc(p.category || "") + (p.price ? " · " + inr(p.price) : " · Price hidden") + '</span>' +
       (p.left === 1 || p.left === 2 ? '<span class="leftlbl"> · Only ' + p.left + ' left!</span>' : '') +
       (p.inStock === false ? '<span class="outlbl"> · Out of stock</span>' : '') + '</div>' +
       '<button class="editbtn" data-code="' + p.code + '">Edit</button>' +
